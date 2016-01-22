@@ -1,0 +1,6 @@
+stdlib.jar
+log.txt
+*.DS_Store
+algs4.jar
+checkstyle-6.1/
+findbugs-2.0.3/
