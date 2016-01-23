@@ -4,3 +4,7 @@ log.txt
 algs4.jar
 checkstyle-6.1/
 findbugs-2.0.3/
+checkstyle-6.9/
+findbugs-3.0.1/
+bin/
+*.class
