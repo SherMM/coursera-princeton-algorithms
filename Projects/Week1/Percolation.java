@@ -1,6 +1,6 @@
 /******************************************************************************
-*  Compilation:  javac Percolation.java
-*  Execution:    java Percolation
+*  Compilation:  javac-algs4 Percolation.java
+*  Execution:    java-algs4 Percolation
 *  Dependencies: WeightedQuickUnionUF.java
 *
 *  A mutable grid system representing a system we want to test for
@@ -68,46 +68,48 @@ public Percolation(int N) {
  */
 public void open(int i, int j) {
         checkIndexes(i, j);
-        this.set(i, j, 1); // open current grid space
+        if (!this.isOpen(i, j)) {
+                this.set(i, j, 1); // open current grid space
 
-        // open adjaction spaces above and below
-        int idx = this.xyTo1D(i, j);
-        if (i > 1) {
-                if (i < this.size()) {
-                        if (this.isOpen(i-1, j)) {
-                                comp.union(idx, this.xyTo1D(i-1, j));
+                // open adjaction spaces above and below
+                int idx = this.xyTo1D(i, j);
+                if (i > 1) {
+                        if (i < this.size()) {
+                                if (this.isOpen(i-1, j)) {
+                                        comp.union(idx, this.xyTo1D(i-1, j));
+                                }
+                                if (this.isOpen(i+1, j)) {
+                                        comp.union(idx, this.xyTo1D(i+1, j));
+                                }
+                        } else if (i == this.size()) {
+                                if (this.isOpen(i-1, j)) {
+                                        comp.union(idx, this.xyTo1D(i-1, j));
+                                }
                         }
-                        if (this.isOpen(i+1, j)) {
+                } else {
+                        if (i != this.size() && this.isOpen(i+1, j)) {
                                 comp.union(idx, this.xyTo1D(i+1, j));
                         }
-                } else if (i == this.size()) {
-                        if (this.isOpen(i-1, j)) {
-                                comp.union(idx, this.xyTo1D(i-1, j));
-                        }
                 }
-        } else {
-                if (i != this.size() && this.isOpen(i+1, j)) {
-                        comp.union(idx, this.xyTo1D(i+1, j));
-                }
-        }
 
-        // open adjacent spaces on the sides
-        if (j > 1) {
-                if (j < this.size()) {
-                        if (this.isOpen(i, j-1)) {
-                                comp.union(idx, this.xyTo1D(i, j-1));
+                // open adjacent spaces on the sides
+                if (j > 1) {
+                        if (j < this.size()) {
+                                if (this.isOpen(i, j-1)) {
+                                        comp.union(idx, this.xyTo1D(i, j-1));
+                                }
+                                if (this.isOpen(i, j+1)) {
+                                        comp.union(idx, this.xyTo1D(i, j+1));
+                                }
+                        } else if (j == this.size()) {
+                                if (this.isOpen(i, j-1)) {
+                                        comp.union(idx, this.xyTo1D(i, j-1));
+                                }
                         }
-                        if (this.isOpen(i, j+1)) {
+                } else {
+                        if (j != this.size() && this.isOpen(i, j+1)) {
                                 comp.union(idx, this.xyTo1D(i, j+1));
                         }
-                } else if (j == this.size()) {
-                        if (this.isOpen(i, j-1)) {
-                                comp.union(idx, this.xyTo1D(i, j-1));
-                        }
-                }
-        } else {
-                if (j != this.size() && this.isOpen(i, j+1)) {
-                        comp.union(idx, this.xyTo1D(i, j+1));
                 }
         }
 }
