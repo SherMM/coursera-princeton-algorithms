@@ -119,7 +119,6 @@ public int compare(Point p, Point q) {
 }
 }
 
-
 /**
  * Returns a string representation of this point.
  * This method is provide for debugging;
