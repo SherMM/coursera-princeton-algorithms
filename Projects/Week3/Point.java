@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdRandom;
+import edu.princeton.cs.algs4.StdOut;
 
 public class Point implements Comparable<Point> {
 
@@ -70,7 +71,7 @@ public double slopeTo(Point that) {
         if (this.y == that.y) {
                 return 0.0;
         }
-        return (that.y - this.y) / (that.x - this.x);
+        return (double)(that.y - this.y) / (that.x - this.x);
 }
 
 /**
@@ -135,7 +136,7 @@ public String toString() {
  * Unit tests the Point data type.
  */
 public static void main(String[] args) {
-        /* YOUR CODE HERE */
+
         int x0 = 0;
         int y0 = 0;
         int N = 100;
