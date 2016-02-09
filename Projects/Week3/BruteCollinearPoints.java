@@ -1,41 +1,41 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdDraw;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Arrays;
 
 
 public class BruteCollinearPoints {
 ArrayList<LineSegment> lines;
-HashMap<String,LineSegment> strSegs;
+HashSet<String> strSegs;
 LineSegment[] segments;
 int count;
 public BruteCollinearPoints(Point[] points) {
         count = 0;
+        Arrays.sort(points);
         lines = new ArrayList<LineSegment>();
-        strSegs = new HashMap<String,LineSegment>();
+        strSegs = new HashSet<String>();
         for (int i = 0; i < points.length; i++) {
                 Point p = points[i];
-                for (int j = 0; j < points.length; j++) {
-                        Point r = points[j];
-                        for (int k = 0; k < points.length; k++) {
-                                Point q = points[k];
-                                for (int l = 0; l < points.length; l++) {
+                for (int j = i+1; j < points.length; j++) {
+                        Point q = points[j];
+                        double pq = p.slopeTo(q);
+                        for (int k = j+1; k < points.length; k++) {
+                                Point r = points[k];
+                                double pr = p.slopeTo(r);
+                                for (int l = k+1; l < points.length; l++) {
                                         Point s = points[l];
-                                        if (checkIndexes(i, j, k, l)) {
-                                                double pq = p.slopeTo(q);
-                                                double pr = p.slopeTo(r);
-                                                double ps = p.slopeTo(s);
-                                                if (pq == pr && pq == ps && pr == ps && inYOrder(p, q, r, s)) {
-                                                        StdOut.println(p.toString() + q.toString() + r.toString() + s.toString());
-                                                        LineSegment line = new LineSegment(p, s);
-                                                        String seg = line.toString();
-                                                        if (!strSegs.containsKey(seg)) {
-                                                                strSegs.put(seg, line);
-                                                                lines.add(line);
-                                                                count++;
-                                                        }
+                                        double ps = p.slopeTo(s);
+                                        if (pq == pr && pq == ps && pr == ps) {
+                                                StdOut.println(p.toString() + q.toString() + r.toString() + s.toString());
+                                                LineSegment line = new LineSegment(p, s);
+                                                String seg = line.toString();
+                                                if (!strSegs.contains(seg)) {
+                                                        strSegs.add(seg);
+                                                        lines.add(line);
+                                                        count++;
                                                 }
                                         }
                                 }
@@ -57,14 +57,6 @@ public int numberOfSegments() {
 
 public LineSegment[] segments() {
         return segments;
-}
-
-private boolean checkIndexes(int i, int j, int k, int l) {
-        return i != j && i != k && i != l && j != k && j != l && k != l;
-}
-
-private boolean inYOrder(Point p, Point q, Point r, Point s) {
-  return r.compareTo(s) < 0 && q.compareTo(r) < 0 && p.compareTo(q) < 0;
 }
 
 public static void main(String[] args) {
