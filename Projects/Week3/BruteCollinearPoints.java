@@ -1,22 +1,25 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdDraw;
-import java.util.HashSet;
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Arrays;
 
 
 public class BruteCollinearPoints {
-ArrayList<LineSegment> lines;
-HashSet<String> strSegs;
+HashMap<String,LineSegment> segs;
 LineSegment[] segments;
-int count;
 public BruteCollinearPoints(Point[] points) {
-        count = 0;
+        if (points == null || hasNull(points)) {
+                throw new NullPointerException("Null supplied or null detected in array");
+        }
+
         Arrays.sort(points);
-        lines = new ArrayList<LineSegment>();
-        strSegs = new HashSet<String>();
+
+        if (hasDuplicatePoint(points)) {
+                throw new IllegalArgumentException("Array contains identical point");
+        }
+
+        segs = new HashMap<String,LineSegment>();
         for (int i = 0; i < points.length; i++) {
                 Point p = points[i];
                 for (int j = i+1; j < points.length; j++) {
@@ -25,38 +28,60 @@ public BruteCollinearPoints(Point[] points) {
                         for (int k = j+1; k < points.length; k++) {
                                 Point r = points[k];
                                 double pr = p.slopeTo(r);
-                                for (int l = k+1; l < points.length; l++) {
-                                        Point s = points[l];
-                                        double ps = p.slopeTo(s);
-                                        if (pq == pr && pq == ps && pr == ps) {
-                                                StdOut.println(p.toString() + q.toString() + r.toString() + s.toString());
-                                                LineSegment line = new LineSegment(p, s);
-                                                String seg = line.toString();
-                                                if (!strSegs.contains(seg)) {
-                                                        strSegs.add(seg);
-                                                        lines.add(line);
-                                                        count++;
+                                if (pq == pr) {
+                                        for (int l = k+1; l < points.length; l++) {
+                                                Point s = points[l];
+                                                double ps = p.slopeTo(s);
+                                                if (pq == ps) {
+                                                        LineSegment line = new LineSegment(p, s);
+                                                        String seg = line.toString();
+                                                        if (!segs.containsKey(seg)) {
+                                                                segs.put(seg, line);
+                                                        }
                                                 }
                                         }
                                 }
+
                         }
                 }
         }
 
-        segments = new LineSegment[count];
-        for (int i = 0; i < count; i++) {
-                segments[i] = lines.get(i);
+        int idx = 0;
+        segments = new LineSegment[segs.size()];
+        for (LineSegment value : segs.values()) {
+                segments[idx] = value;
+                idx++;
         }
 
 
 }
 
 public int numberOfSegments() {
-        return count;
+        return segs.size();
 }
 
 public LineSegment[] segments() {
         return segments;
+}
+
+private static boolean hasNull(Point[] points) {
+        for (int i = 0; i < points.length; i++) {
+                if (points[i] == null) {
+                        return true;
+                }
+        }
+        return false;
+}
+
+private static boolean hasDuplicatePoint(Point[] points) {
+        Point p = points[0];
+        for (int i = 1; i < points.length; i++) {
+                if (points[i].compareTo(p) == 0) {
+                        return true;
+                }
+                p = points[i];
+        }
+        return false;
 }
 
 public static void main(String[] args) {
@@ -80,6 +105,7 @@ public static void main(String[] args) {
         StdDraw.show();
 
         BruteCollinearPoints collinear = new BruteCollinearPoints(points);
+        StdOut.println("Number fo Segments: " + collinear.numberOfSegments());
         for (LineSegment segment : collinear.segments()) {
                 StdOut.println(segment);
                 segment.draw();
