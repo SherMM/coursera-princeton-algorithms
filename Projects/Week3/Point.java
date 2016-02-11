@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdRandom;
-import edu.princeton.cs.algs4.StdOut;
 
 public class Point implements Comparable<Point> {
 
@@ -71,7 +70,7 @@ public double slopeTo(Point that) {
         if (this.y == that.y) {
                 return 0.0;
         }
-        return (double)(that.y - this.y) / (that.x - this.x);
+        return (double) (that.y - this.y) / (that.x - this.x);
 }
 
 /**
@@ -110,9 +109,9 @@ private class SlopeOrder implements Comparator<Point> {
 public int compare(Point p, Point q) {
         double slope1 = slopeTo(p);
         double slope2 = slopeTo(q);
-        if (slope1 < slope2) {
+        if (Double.compare(slope1, slope2) < 0) {
                 return -1;
-        } else if (slope1 > slope2) {
+        } else if (Double.compare(slope1, slope2) > 0) {
                 return +1;
         } else {
                 return 0;
@@ -151,7 +150,7 @@ public static void main(String[] args) {
                 int y = StdRandom.uniform(100);
                 points[i] = new Point(x, y);
                 points[i].draw();
-        };
+        }
 
         // draw p = (x0, x1) in red
         Point p = new Point(x0, y0);

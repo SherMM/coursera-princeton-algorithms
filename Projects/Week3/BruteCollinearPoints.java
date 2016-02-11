@@ -3,14 +3,18 @@ import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdDraw;
 import java.util.HashMap;
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 
 
 public class BruteCollinearPoints {
-HashMap<String,LineSegment> segs;
-LineSegment[] segments;
+private HashMap<String, LineSegment> segs;
+private List<LineSegment> lines;
+private int count = 0;
+
 public BruteCollinearPoints(Point[] points) {
         if (points == null || hasNull(points)) {
-                throw new NullPointerException("Null supplied or null detected in array");
+                throw new NullPointerException("Null detected in points array");
         }
 
         Arrays.sort(points);
@@ -19,7 +23,8 @@ public BruteCollinearPoints(Point[] points) {
                 throw new IllegalArgumentException("Array contains identical point");
         }
 
-        segs = new HashMap<String,LineSegment>();
+        segs = new HashMap<String, LineSegment>();
+        lines = new ArrayList<LineSegment>();
         for (int i = 0; i < points.length; i++) {
                 Point p = points[i];
                 for (int j = i+1; j < points.length; j++) {
@@ -37,6 +42,8 @@ public BruteCollinearPoints(Point[] points) {
                                                         String seg = line.toString();
                                                         if (!segs.containsKey(seg)) {
                                                                 segs.put(seg, line);
+                                                                lines.add(line);
+                                                                count++;
                                                         }
                                                 }
                                         }
@@ -45,23 +52,18 @@ public BruteCollinearPoints(Point[] points) {
                         }
                 }
         }
-
-        int idx = 0;
-        segments = new LineSegment[segs.size()];
-        for (LineSegment value : segs.values()) {
-                segments[idx] = value;
-                idx++;
-        }
-
-
 }
 
 public int numberOfSegments() {
-        return segs.size();
+        return count;
 }
 
 public LineSegment[] segments() {
-        return segments;
+  LineSegment[] segments = new LineSegment[count];
+  for (int i = 0; i < count; i++) {
+          segments[i] = lines.get(i);
+  }
+  return segments;
 }
 
 private static boolean hasNull(Point[] points) {
@@ -105,7 +107,6 @@ public static void main(String[] args) {
         StdDraw.show();
 
         BruteCollinearPoints collinear = new BruteCollinearPoints(points);
-        StdOut.println("Number fo Segments: " + collinear.numberOfSegments());
         for (LineSegment segment : collinear.segments()) {
                 StdOut.println(segment);
                 segment.draw();
