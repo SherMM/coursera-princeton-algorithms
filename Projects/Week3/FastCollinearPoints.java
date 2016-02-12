@@ -13,6 +13,17 @@ private List<LineSegment> segs;
 private int count = 0;
 
 public FastCollinearPoints(Point[] points) {
+
+        if (points == null || hasNull(points)) {
+                throw new NullPointerException("Null detected in points array");
+        }
+
+        Arrays.sort(points);
+
+        if (hasDuplicatePoint(points)) {
+                throw new IllegalArgumentException("Array contains identical point");
+        }
+
         lines = new HashMap<String, LineSegment>();
         segs = new ArrayList<LineSegment>();
         Point[] pts = Arrays.copyOf(points, points.length);
@@ -25,10 +36,20 @@ public FastCollinearPoints(Point[] points) {
                 // in slope order can ignore first item (p and itself, so slope is 0)
                 for (int j = 1; j < pts.length; j++) {
                         double currSlope = p.slopeTo(pts[j]);
+
                         if (currSlope != slope) {
                                 // if slope changed and we have at least three pts of similar slope to origin
                                 if (segment.size() >= 3) {
-                                        break;
+                                        segment.add(p); // add origin point back
+                                        Point maxPoint = Collections.max(segment);
+                                        Point minPoint = Collections.min(segment);
+                                        LineSegment line = new LineSegment(minPoint, maxPoint);
+                                        String seg = line.toString();
+                                        if (!lines.containsKey(seg)) {
+                                                lines.put(seg, line);
+                                                segs.add(line);
+                                                count++;
+                                        }
                                 }
                                 segment.clear();
                                 segment.add(pts[j]);
@@ -38,6 +59,7 @@ public FastCollinearPoints(Point[] points) {
                         }
                 }
 
+                // need to refactor bc of duplicate code
                 // segment found has more at least 4 points
                 if (segment.size() >= 3) {
                         segment.add(p); // add origin point back
@@ -59,11 +81,31 @@ public int numberOfSegments() {
 }
 
 public LineSegment[] segments() {
-  LineSegment[] segments = new LineSegment[count];
-  for (int i = 0; i < count; i++) {
-          segments[i] = segs.get(i);
-  }
-  return segments;
+        LineSegment[] segments = new LineSegment[count];
+        for (int i = 0; i < count; i++) {
+                segments[i] = segs.get(i);
+        }
+        return segments;
+}
+
+private static boolean hasNull(Point[] points) {
+        for (int i = 0; i < points.length; i++) {
+                if (points[i] == null) {
+                        return true;
+                }
+        }
+        return false;
+}
+
+private static boolean hasDuplicatePoint(Point[] points) {
+        Point p = points[0];
+        for (int i = 1; i < points.length; i++) {
+                if (points[i].compareTo(p) == 0) {
+                        return true;
+                }
+                p = points[i];
+        }
+        return false;
 }
 
 public static void main(String[] args) {
