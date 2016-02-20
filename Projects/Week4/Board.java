@@ -1,6 +1,7 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
+import edu.princeton.cs.algs4.Stack;
 import java.util.Arrays;
 
 public class Board {
@@ -58,11 +59,11 @@ private static int convert2Dto1D(int i, int j, int cols) {
 }
 
 private static int getRowIndex(int index, int cols) {
-        return index % cols;
+        return index / cols;
 }
 
 private static int getColIndex(int index, int cols) {
-        return index / cols;
+        return index % cols;
 }
 
 public boolean isGoal() {
@@ -79,27 +80,33 @@ public Board twin() {
         int[] copy = Arrays.copyOf(board, board.length);
 
         // find index of empty block
-        int empty = 0;
-        for (int i = 0; i < size; i++) {
-                if (board[i] == 0) {
-                        empty = i;
-                }
-        }
+        int empty = this.findEmptySpace();
 
+        boolean found = false;
         int i = empty;
-        while (i == empty) {
-                i = StdRandom.uniform(size);
-        }
-
         int j = empty;
-        while (j == empty) {
+        while (!found) {
+                i = StdRandom.uniform(size);
                 j = StdRandom.uniform(size);
+                if (i != empty && j != empty && i != j) {
+                  found = true;
+                }
         }
 
         swap(i, j, copy);
         int[][] tiles = convert1Dto2DArray(copy, N);
         Board twinBoard = new Board(tiles);
         return twinBoard;
+}
+
+private int findEmptySpace() {
+        int empty = 0;
+        for (int i = 0; i < size; i++) {
+                if (board[i] == 0) {
+                        empty = i;
+                }
+        }
+        return empty;
 }
 
 private static int[][] convert1Dto2DArray(int[] array, int dim) {
@@ -119,14 +126,67 @@ private static void swap(int i, int j, int[] array) {
 }
 
 public boolean equals(Object y) {
-        return true;
+        // same object
+        if (y == this) {
+                return true;
+        }
+
+        // y is not initialized
+        if (y == null) {
+                return false;
+        }
+
+        // not same class type
+        if (y.getClass() != this.getClass()) {
+                return false;
+        }
+
+        // cast y as a board
+        Board that = (Board) y;
+
+        // check size
+        if (that.size != this.size) {
+                return false;
+        }
+
+        return Arrays.equals(this.board, that.board);
+
 }
 
-/*
-   public Iterable<Board> neighbors() {
+public Iterable<Board> neighbors() {
+        Stack<Board> stack = new Stack<Board>();
+        int empty = this.findEmptySpace();
+        int x = getRowIndex(empty, N);
+        int y = getColIndex(empty, N);
 
-   }
- */
+        // handle rows
+        if (x - 1 >= 0) {
+          stack.push(this.getNeighbor(empty, x-1, y));
+        }
+        if (x + 1 <= N) {
+          stack.push(this.getNeighbor(empty, x+1, y));
+        }
+
+        // handle columns
+        if (y - 1 >= 0) {
+          stack.push(this.getNeighbor(empty, x, y-1));
+        }
+        if (y + 1 <= N) {
+          stack.push(this.getNeighbor(empty, x, y+1));
+        }
+
+        return stack;
+}
+
+private Board getNeighbor(int empty, int x, int y) {
+        // need new array
+        int[] copy = Arrays.copyOf(board, board.length);
+        int index = convert2Dto1D(x, y, N);
+        swap(index, empty, copy);
+        int[][] tiles = convert1Dto2DArray(copy, N);
+        Board neighbor = new Board(tiles);
+        return neighbor;
+}
 
 public String toString() {
         StringBuilder s = new StringBuilder();
@@ -155,7 +215,16 @@ public static void main(String[] args) {
         StdOut.println("Manhattan Score: " + initial.manhattan());
         StdOut.println("Is Goal Board: " + initial.isGoal());
         StdOut.println(initial);
+        StdOut.println("Twin board: ");
         StdOut.println(initial.twin());
+        StdOut.println("Equal: " + initial.equals(initial.twin()));
+        StdOut.println("Equals itself: " + initial.equals(initial));
+
+        Iterable<Board> stack = initial.neighbors();
+        StdOut.println("Neighbors for Board: ");
+        for (Board neighbor : stack) {
+          StdOut.println(neighbor);
+        }
         /*
            // solve the puzzle
            Solver solver = new Solver(initial);
