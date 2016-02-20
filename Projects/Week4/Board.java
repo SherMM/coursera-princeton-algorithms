@@ -87,7 +87,7 @@ public Board twin() {
                 i = StdRandom.uniform(size);
                 j = StdRandom.uniform(size);
                 if (i != empty && j != empty && i != j) {
-                  found = true;
+                        found = true;
                 }
         }
 
@@ -125,7 +125,7 @@ private static void swap(int i, int j, int[] array) {
 
 public boolean equals(Object y) {
         // same object
-        if (y == this) {
+        if (this == y) {
                 return true;
         }
 
@@ -135,20 +135,22 @@ public boolean equals(Object y) {
         }
 
         // not same class type
-        if (y.getClass() != this.getClass()) {
+        if (this.getClass() != y.getClass()) {
                 return false;
         }
 
         // cast y as a board
         Board that = (Board) y;
 
-        // check size
-        if (that.size != this.size) {
+        if (!Arrays.equals(this.board, that.board)) {
                 return false;
         }
 
-        return Arrays.equals(this.board, that.board);
+        if (this.dimension() != that.dimension()) {
+                return false;
+        }
 
+        return true;
 }
 
 public Iterable<Board> neighbors() {
@@ -159,18 +161,18 @@ public Iterable<Board> neighbors() {
 
         // handle rows
         if (x - 1 >= 0) {
-          stack.push(this.getNeighbor(empty, x-1, y));
+                stack.push(this.getNeighbor(empty, x-1, y));
         }
-        if (x + 1 <= N) {
-          stack.push(this.getNeighbor(empty, x+1, y));
+        if (x + 1 < N) {
+                stack.push(this.getNeighbor(empty, x+1, y));
         }
 
         // handle columns
         if (y - 1 >= 0) {
-          stack.push(this.getNeighbor(empty, x, y-1));
+                stack.push(this.getNeighbor(empty, x, y-1));
         }
-        if (y + 1 <= N) {
-          stack.push(this.getNeighbor(empty, x, y+1));
+        if (y + 1 < N) {
+                stack.push(this.getNeighbor(empty, x, y+1));
         }
 
         return stack;
@@ -221,7 +223,7 @@ public static void main(String[] args) {
         Iterable<Board> stack = initial.neighbors();
         StdOut.println("Neighbors for Board: ");
         for (Board neighbor : stack) {
-          StdOut.println(neighbor);
+                StdOut.println(neighbor);
         }
 }
 }
