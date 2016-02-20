@@ -6,11 +6,9 @@ import java.util.Arrays;
 
 public class Board {
 private int[] board;
-private int moves;
 private int N;
 private int size;
 public Board(int[][] blocks) {
-        moves = 0;
         N = blocks.length;
         size = N*N;
         board = new int[size];
@@ -225,18 +223,5 @@ public static void main(String[] args) {
         for (Board neighbor : stack) {
           StdOut.println(neighbor);
         }
-        /*
-           // solve the puzzle
-           Solver solver = new Solver(initial);
-
-           // print solution to standard output
-           if (!solver.isSolvable())
-            StdOut.println("No solution possible");
-           else {
-            StdOut.println("Minimum number of moves = " + solver.moves());
-            for (Board board : solver.solution())
-                StdOut.println(board);
-           }
-         */
 }
 }
