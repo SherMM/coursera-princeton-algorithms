@@ -129,10 +129,11 @@ public Iterable<Board> solution() {
         if (!this.isSolvable()) {
                 return null;
         }
+        SearchNode sol = solution; // need copy to not mutate
         Stack<Board> stack = new Stack<Board>();
-        while (solution != null) {
-                stack.push(solution.getBoard());
-                solution = solution.getPrevNode();
+        while (sol != null) {
+                stack.push(sol.getBoard());
+                sol = sol.getPrevNode();
         }
         return stack;
 }
