@@ -6,8 +6,9 @@ import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.Stack;
 
 public class KdTree {
-private Node root;
-private int nodes;
+private Node root; // tree root
+private boolean orientation; // boolean indicating orientation of root node
+private int nodes; // number of nodes in tree
 
 private static class Node {
 private Point2D point;
@@ -37,47 +38,79 @@ public int size() {
 }
 
 public void insert(Point2D p) {
-        root = insert(root, p);
-        nodes++;
+        root = insert(root, p, true);
 }
 
-private Node insert(Node x, Point2D p) {
+private Node insert(Node x, Point2D p, boolean orient) {
         if (x == null) {
-          return new Node(p);
+                nodes++;
+                return new Node(p);
         }
-        int cmp = p.compareTo(x.point);
-        if (cmp < 0) x.lb = insert(x.lb, p);
-        else if (cmp > 0) x.rt = insert(x.rt, p);
+        // check orientation level to know what to compare against
+        int cmp;
+        if (orient) {
+                cmp = Double.compare(p.x(), x.point.x()); // vert lines compare x-coord
+        } else {
+                cmp = Double.compare(p.y(), x.point.y()); // horiz lines compare y-coord
+        }
+
+        // insert into correct subtree
+        if (cmp < 0) x.lb = insert(x.lb, p, !orient);
+        else if (cmp > 0) x.rt = insert(x.rt, p, !orient);
         else x.point = p;
         return x;
 }
 
-/*
-public contains(Point2D p) {
-
+public boolean contains(Point2D p) {
+  return get(p) != null;
 }
-*/
+
+private Point2D get(Point2D p) {
+  return get(root, p, true);
+}
+
+private Point2D get(Node x, Point2D p, boolean orient) {
+  if (x == null) return null;
+
+  int cmp;
+  if (orient) {
+    cmp = Double.compare(p.x(), x.point.x());
+  } else {
+    cmp = Double.compare(p.y(), x.point.y());
+  }
+
+  if (cmp < 0) return get(x.lb, p, !orient);
+  else if (cmp > 0) return get(x.rt, p, !orient);
+  else return x.point;
+}
 
 public void draw() {
 
 }
 
 /*
-public Iterable<Point2D> range(RectHV rect) {
+   public Iterable<Point2D> range(RectHV rect) {
 
-}
+   }
 
-public Point2D nearest(Point2D p) {
+   public Point2D nearest(Point2D p) {
 
-}
-*/
+   }
+ */
 
 public static void main(String[] args) {
-      KdTree kd = new KdTree();
-      Point2D p1 = new Point2D(0.7, 0.2);
-      Point2D p2 = new Point2D(0.5, 0.4);
-      kd.insert(p1);
-      kd.insert(p2);
-      StdOut.println(kd.size());
+        KdTree kd = new KdTree();
+        Point2D p1 = new Point2D(0.7, 0.2);
+        Point2D p2 = new Point2D(0.5, 0.4);
+        Point2D p3 = new Point2D(0.2, 0.3);
+        Point2D p4 = new Point2D(0.7, 0.2);
+        kd.insert(p1);
+        kd.insert(p2);
+        kd.insert(p3);
+        kd.insert(p4);
+        StdOut.println(kd.size());
+        StdOut.println(kd.contains(p1));
+        StdOut.println(kd.contains(p2));
+        StdOut.println(kd.contains(p3));
 }
 }
