@@ -57,7 +57,7 @@ public Point2D nearest(Point2D p) {
         Point2D closest = null;
         double distance = Double.POSITIVE_INFINITY;
         for (Point2D nbr : points) {
-                double dist = p.distanceTo(nbr);
+                double dist = p.distanceSquaredTo(nbr);
                 if (dist < distance && p.compareTo(nbr) != 0) {
                         closest = nbr;
                         distance = dist;
