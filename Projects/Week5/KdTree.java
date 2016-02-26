@@ -43,17 +43,11 @@ public void insert(Point2D p) {
 
 private Node insert(Node x, Node prev, Point2D p, boolean orient) {
         if (x == null) {
-                nodes++;
-                Node node = new Node(p);
                 if (prev == null) {
                         node.rect = new RectHV(0.0, 0.0, 1.0, 1.0);
-                } else {
-                        if (orient) {
-
-                        } else {
-                          
-                        }
                 }
+                Node node = new Node(p);
+                nodes++;
                 return node;
         }
         // check orientation level to know what to compare against
