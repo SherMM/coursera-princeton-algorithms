@@ -38,13 +38,23 @@ public int size() {
 }
 
 public void insert(Point2D p) {
-        root = insert(root, p, true);
+        root = insert(root, null, p, true);
 }
 
-private Node insert(Node x, Point2D p, boolean orient) {
+private Node insert(Node x, Node prev, Point2D p, boolean orient) {
         if (x == null) {
                 nodes++;
-                return new Node(p);
+                Node node = new Node(p);
+                if (prev == null) {
+                        node.rect = new RectHV(0.0, 0.0, 1.0, 1.0);
+                } else {
+                        if (orient) {
+
+                        } else {
+                          
+                        }
+                }
+                return node;
         }
         // check orientation level to know what to compare against
         int cmp;
@@ -55,33 +65,36 @@ private Node insert(Node x, Point2D p, boolean orient) {
         }
 
         // insert into correct subtree
-        if (cmp < 0) x.lb = insert(x.lb, p, !orient);
-        else if (cmp > 0) x.rt = insert(x.rt, p, !orient);
+        if (cmp < 0) x.lb = insert(x.lb, x, p, !orient);
+        else if (cmp > 0) x.rt = insert(x.rt, x, p, !orient);
         else x.point = p;
         return x;
 }
 
 public boolean contains(Point2D p) {
-  return get(p) != null;
+        return get(p) != null;
 }
 
 private Point2D get(Point2D p) {
-  return get(root, p, true);
+        return get(root, p, true);
 }
 
 private Point2D get(Node x, Point2D p, boolean orient) {
-  if (x == null) return null;
+        if (x == null) return null;
 
-  int cmp;
-  if (orient) {
-    cmp = Double.compare(p.x(), x.point.x());
-  } else {
-    cmp = Double.compare(p.y(), x.point.y());
-  }
+        int cmp;
+        if (orient) {
+                cmp = Double.compare(p.x(), x.point.x());
+        } else {
+                cmp = Double.compare(p.y(), x.point.y());
+        }
 
-  if (cmp < 0) return get(x.lb, p, !orient);
-  else if (cmp > 0) return get(x.rt, p, !orient);
-  else return x.point;
+        if (cmp < 0) return get(x.lb, p, !orient);
+        else if (cmp > 0) return get(x.rt, p, !orient);
+        else {
+                StdOut.println(x.rect);
+                return x.point;
+        }
 }
 
 public void draw() {
