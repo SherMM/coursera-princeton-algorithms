@@ -4,6 +4,7 @@ import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.Stack;
+import edu.princeton.cs.algs4.Queue;
 
 public class KdTree {
 private Node root; // tree root
@@ -38,18 +39,43 @@ public int size() {
 }
 
 public void insert(Point2D p) {
-        root = insert(root, null, p, true);
+        root = insert(root, null, p, true, false);
 }
 
-private Node insert(Node x, Node prev, Point2D p, boolean orient) {
+private Node insert(Node x, Node prev, Point2D p, boolean orient, boolean lower) {
         if (x == null) {
-                if (prev == null) {
-                        node.rect = new RectHV(0.0, 0.0, 1.0, 1.0);
-                }
                 Node node = new Node(p);
+                if (size() == 0) {
+                        node.rect = new RectHV(0.0, 0.0, 1.0, 1.0);
+                } else {
+                        double xmin, ymin, xmax, ymax;
+                        if (lower) {
+                                xmin = prev.rect.xmin();
+                                ymin = prev.rect.ymin();
+                                if (orient) {
+                                        xmax = prev.rect.xmax();
+                                        ymax = prev.point.y();
+                                } else {
+                                        xmax = prev.point.x();
+                                        ymax = prev.rect.ymax();
+                                }
+                        } else {
+                                xmax = prev.rect.xmax();
+                                ymax = prev.rect.ymax();
+                                if (orient) {
+                                        xmin = prev.rect.xmin();
+                                        ymin = prev.point.y();
+                                } else {
+                                        xmin = prev.point.x();
+                                        ymin = prev.rect.ymin();
+                                }
+                        }
+                        node.rect = new RectHV(xmin, ymin, xmax, ymax);
+                }
                 nodes++;
                 return node;
         }
+
         // check orientation level to know what to compare against
         int cmp;
         if (orient) {
@@ -58,9 +84,10 @@ private Node insert(Node x, Node prev, Point2D p, boolean orient) {
                 cmp = Double.compare(p.y(), x.point.y()); // horiz lines compare y-coord
         }
 
+
         // insert into correct subtree
-        if (cmp < 0) x.lb = insert(x.lb, x, p, !orient);
-        else if (cmp > 0) x.rt = insert(x.rt, x, p, !orient);
+        if (cmp < 0) x.lb = insert(x.lb, x, p, !orient, true);
+        else if (cmp > 0 || (cmp == 0 && orient)) x.rt = insert(x.rt, x, p, !orient, false);
         else x.point = p;
         return x;
 }
@@ -85,14 +112,19 @@ private Point2D get(Node x, Point2D p, boolean orient) {
 
         if (cmp < 0) return get(x.lb, p, !orient);
         else if (cmp > 0) return get(x.rt, p, !orient);
-        else {
-                StdOut.println(x.rect);
-                return x.point;
-        }
+        else return x.point;
 }
 
 public void draw() {
-
+        Queue<Node> queue = new Queue<Node>();
+        queue.enqueue(root);
+        while (!queue.isEmpty()) {
+                Node x = queue.dequeue();
+                if (x == null) continue;
+                x.point.draw();
+                queue.enqueue(x.lb);
+                queue.enqueue(x.rt);
+        }
 }
 
 /*
@@ -106,18 +138,45 @@ public void draw() {
  */
 
 public static void main(String[] args) {
-        KdTree kd = new KdTree();
-        Point2D p1 = new Point2D(0.7, 0.2);
-        Point2D p2 = new Point2D(0.5, 0.4);
-        Point2D p3 = new Point2D(0.2, 0.3);
-        Point2D p4 = new Point2D(0.7, 0.2);
-        kd.insert(p1);
-        kd.insert(p2);
-        kd.insert(p3);
-        kd.insert(p4);
-        StdOut.println(kd.size());
-        StdOut.println(kd.contains(p1));
-        StdOut.println(kd.contains(p2));
-        StdOut.println(kd.contains(p3));
+        /*
+           KdTree kd = new KdTree();
+           Point2D p1 = new Point2D(0.7, 0.2);
+           Point2D p2 = new Point2D(0.5, 0.4);
+           Point2D p3 = new Point2D(0.2, 0.3);
+           Point2D p4 = new Point2D(0.4, 0.7);
+           Point2D p5 = new Point2D(0.9, 0.6);
+           kd.insert(p1);
+           kd.insert(p2);
+           kd.insert(p3);
+           kd.insert(p4);
+           kd.insert(p5);
+           StdOut.println(kd.size());
+           StdOut.println(kd.contains(p1));
+           StdOut.println(kd.contains(p2));
+           StdOut.println(kd.contains(p3));
+           StdOut.println(kd.contains(p4));
+           StdOut.println(kd.contains(p5));
+         */
+
+        String filename = args[0];
+        In in = new In(filename);
+
+        //StdDraw.show(0);
+        KdTree kdtree = new KdTree();
+        while (!in.isEmpty()) {
+                double x = in.readDouble();
+                double y = in.readDouble();
+                Point2D p = new Point2D(x, y);
+                kdtree.insert(p);
+        }
+
+        //Point2D testPT = new Point2D(0.206107, 0.095492);
+        //StdOut.println(kdtree.contains(testPT));
+
+        // draw the points
+        StdDraw.clear();
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.setPenRadius(.01);
+        kdtree.draw();
 }
 }

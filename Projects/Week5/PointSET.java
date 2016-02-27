@@ -26,22 +26,26 @@ public int size() {
 }
 
 public void insert(Point2D p) {
+        if (p == null) throw new NullPointerException("must insert a point");
         points.add(p);
 }
 
 public boolean contains(Point2D p) {
+        if (p == null) throw new NullPointerException("must search for a point");
         return points.contains(p);
 }
 
 public void draw() {
         // draw the points
         for (Point2D p : points) {
+                StdOut.println(p);
                 p.draw();
         }
         StdDraw.show();
 }
 
 public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null) throw new NullPointerException("input rectangle");
         Stack<Point2D> stack = new Stack<Point2D>();
 
         for (Point2D p : points) {
@@ -53,7 +57,7 @@ public Iterable<Point2D> range(RectHV rect) {
 }
 
 public Point2D nearest(Point2D p) {
-
+        if (p == null) throw new NullPointerException("must search for a point");
         Point2D closest = null;
         double distance = Double.POSITIVE_INFINITY;
         for (Point2D nbr : points) {
