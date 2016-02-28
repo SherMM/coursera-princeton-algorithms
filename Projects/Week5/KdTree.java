@@ -16,12 +16,14 @@ private Point2D point;
 private RectHV rect;
 private Node lb;
 private Node rt;
+private boolean vert;
 
 public Node(Point2D p) {
         point = p;
         rect = null;
         lb = null;
         rt = null;
+        vert = true;
 }
 }
 
@@ -56,6 +58,7 @@ private Node insert(Node x, Node prev, Point2D p, boolean orient, boolean lower)
                                         xmax = prev.rect.xmax();
                                         ymax = prev.point.y();
                                 } else {
+                                        node.vert = false;
                                         xmax = prev.point.x();
                                         ymax = prev.rect.ymax();
                                 }
@@ -66,6 +69,7 @@ private Node insert(Node x, Node prev, Point2D p, boolean orient, boolean lower)
                                         xmin = prev.rect.xmin();
                                         ymin = prev.point.y();
                                 } else {
+                                        node.vert = false;
                                         xmin = prev.point.x();
                                         ymin = prev.rect.ymin();
                                 }
@@ -121,6 +125,23 @@ public void draw() {
         while (!queue.isEmpty()) {
                 Node x = queue.dequeue();
                 if (x == null) continue;
+                double xmin = x.rect.xmin();
+                double ymin = x.rect.ymin();
+                double xmax = x.rect.xmax();
+                double ymax = x.rect.ymax();
+                double xcoord = x.point.x();
+                double ycoord = x.point.y();
+                if (x.vert) {
+                    StdDraw.setPenRadius(.005);
+                    StdDraw.setPenColor(StdDraw.RED);
+                    StdDraw.line(xcoord, ymin, xcoord, ymax);
+                } else {
+                    StdDraw.setPenRadius(.005);
+                    StdDraw.setPenColor(StdDraw.BLUE);
+                    StdDraw.line(xmin, ycoord, xmax, ycoord);
+                }
+                StdDraw.setPenColor(StdDraw.BLACK);
+                StdDraw.setPenRadius(.01);
                 x.point.draw();
                 queue.enqueue(x.lb);
                 queue.enqueue(x.rt);
