@@ -9,12 +9,9 @@ import edu.princeton.cs.algs4.Stack;
 public class PointSET {
 
 private SET<Point2D> points;
-private int count;
-
 
 public PointSET() {
         points = new SET<Point2D>();
-        count = 0;
 }
 
 public boolean isEmpty() {
@@ -38,7 +35,6 @@ public boolean contains(Point2D p) {
 public void draw() {
         // draw the points
         for (Point2D p : points) {
-                StdOut.println(p);
                 p.draw();
         }
         StdDraw.show();
@@ -62,7 +58,7 @@ public Point2D nearest(Point2D p) {
         double distance = Double.POSITIVE_INFINITY;
         for (Point2D nbr : points) {
                 double dist = p.distanceSquaredTo(nbr);
-                if (dist < distance && p.compareTo(nbr) != 0) {
+                if (dist < distance) {
                         closest = nbr;
                         distance = dist;
                 }
