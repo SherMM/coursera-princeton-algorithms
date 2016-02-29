@@ -1,23 +1,24 @@
 import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.SET;
-import edu.princeton.cs.algs4.StdRandom;
 
 public class KdTree {
 private Node root; // tree root
 private int nodes; // number of nodes in tree
 
+/**
+ * Class for node in kdtree
+ */
 private static class Node {
-private Point2D point;
-private RectHV rect;
-private Node lb;
-private Node rt;
-private boolean vert;
+private Point2D point; // x,y point in this node
+private RectHV rect; // axis aligned rectangle represented by this point
+private Node lb; // left subtree
+private Node rt; // right subtree
+private boolean vert; // signals orientation of node (compare by x or y)
 
 public Node(Point2D p) {
         point = p;
@@ -43,17 +44,23 @@ public int size() {
 
 public void insert(Point2D p) {
         if (p == null) throw new NullPointerException("must insert a point");
+        // start at root, prev starts as null, orientation is vertical to start,
+        // and side of subtree starts as upper side (right)
         root = insert(root, null, p, true, false);
 }
 
 private Node insert(Node x, Node prev, Point2D p, boolean orient, boolean lower) {
         if (x == null) {
+                // reached leaf or root is null
                 Node node = new Node(p);
                 if (size() == 0) {
+                        // root represents entire unit square
                         node.rect = new RectHV(0.0, 0.0, 1.0, 1.0);
                 } else {
+                        // need to calculate rectangle dimensions
                         double xmin, ymin, xmax, ymax;
                         if (lower) {
+                                // right subtree
                                 xmin = prev.rect.xmin();
                                 ymin = prev.rect.ymin();
                                 if (orient) {
@@ -65,6 +72,7 @@ private Node insert(Node x, Node prev, Point2D p, boolean orient, boolean lower)
                                         ymax = prev.rect.ymax();
                                 }
                         } else {
+                                // left subtree
                                 xmax = prev.rect.xmax();
                                 ymax = prev.rect.ymax();
                                 if (orient) {
@@ -92,7 +100,7 @@ private Node insert(Node x, Node prev, Point2D p, boolean orient, boolean lower)
 
 
         // insert into correct subtree
-        if (x.point.compareTo(p) == 0) x.point = p;
+        if (x.point.compareTo(p) == 0) x.point = p; // points are equal
         else if (cmp < 0) x.lb = insert(x.lb, x, p, !orient, true);
         else if (cmp > 0 || cmp == 0) x.rt = insert(x.rt, x, p, !orient, false);
         return x;
@@ -118,7 +126,9 @@ private Point2D get(Node x, Point2D p, boolean orient) {
         }
 
         if (cmp < 0) return get(x.lb, p, !orient);
+        // one of the coordinates is equal, but points are not
         else if (cmp > 0 || (cmp == 0 && x.point.compareTo(p) != 0)) return get(x.rt, p, !orient);
+        // points are equal
         else return x.point;
 }
 
@@ -135,10 +145,12 @@ public void draw() {
                 double xcoord = x.point.x();
                 double ycoord = x.point.y();
                 if (x.vert) {
+                        // red lines for vertical splits
                         StdDraw.setPenRadius(.0005);
                         StdDraw.setPenColor(StdDraw.RED);
                         StdDraw.line(xcoord, ymin, xcoord, ymax);
                 } else {
+                        // blue lines for horizontal splits
                         StdDraw.setPenRadius(.0005);
                         StdDraw.setPenColor(StdDraw.BLUE);
                         StdDraw.line(xmin, ycoord, xmax, ycoord);
@@ -178,20 +190,16 @@ public Point2D nearest(Point2D p) {
         double distance = Double.POSITIVE_INFINITY;
         queue.enqueue(root);
         while (!queue.isEmpty()) {
-                StdOut.println("Getting next");
                 Node x = queue.dequeue();
-                //StdOut.println("dequeued: " + x.point);
                 if (x == null) continue;
                 RectHV curr = x.rect;
                 double dist = curr.distanceSquaredTo(p);
-                StdOut.println("Distance: " + distance + " dist: " + dist);
-                if (dist == 0.0 && closest == null) {
-                        queue.enqueue(x.lb);
-                        queue.enqueue(x.rt);
-                } else if (dist < distance) {
-                        StdOut.println("Adding");
-                        closest = x.point;
-                        distance = dist;
+                if (dist <= distance) {
+                        double d = p.distanceSquaredTo(x.point);
+                        if (d < distance) {
+                                distance = d;
+                                closest = x.point;
+                        }
                         queue.enqueue(x.lb);
                         queue.enqueue(x.rt);
                 }
@@ -216,29 +224,19 @@ public static void main(String[] args) {
                 set.add(p);
         }
 
-        Point2D testPT = new Point2D(0.3, 0.04);
-        //StdOut.println("Nearest: ");
-        //StdOut.println(kdtree.nearest(testPT));
-
         // draw the points
         StdDraw.clear();
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.setPenRadius(.01);
         kdtree.draw();
 
-        //StdDraw.setPenColor(StdDraw.BLUE);
-        //testPT.draw();
-
+        Point2D queryPT = new Point2D(0.6, 0.095492);
         StdDraw.setPenColor(StdDraw.RED);
-        kdtree.nearest(testPT).draw();
+        kdtree.nearest(queryPT).draw();
 
-        Point2D queryPT = new Point2D(0.206107, 0.095492);
-        RectHV rc = new RectHV(0.0, 0.0, 1.0, 1.0);
+        StdDraw.setPenColor(StdDraw.BLUE);
+        queryPT.draw();
 
-        StdOut.println("Point x: " + queryPT.x());
-        StdOut.println("Point y: " + queryPT.y());
-        StdOut.println("Rectangle: " + rc);
-        StdOut.println(rc.distanceSquaredTo(queryPT));
 
 }
 }
