@@ -87,6 +87,7 @@ public Solver(Board initial) {
                 SearchNode t = tq.delMin();
                 Board twinBoard = t.getBoard();
 
+                // if twin board is goal, then original board isn't solvable
                 if (twinBoard.isGoal()) {
                         solvable = false;
                         break;
