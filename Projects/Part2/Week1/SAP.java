@@ -19,7 +19,9 @@ public SAP(Digraph G) {
 
 // length of shortest ancestral path between v and w; -1 if no such path
 public int length(int v, int w) {
-        if (v == null || w == null) throw new NullPointerException("Nodes are null");
+        // handle input exceptions
+        int limit = sap.V()-1; // highest possible vertex
+        if (!isValidVertex(v, limit) || !isValidVertex(w, limit)) throw new IndexOutOfBoundsException("Vertex not in Graph");
         int a = this.ancestor(v, w);
         if (a == -1) {
                 return -1;
@@ -31,7 +33,9 @@ public int length(int v, int w) {
 
 // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
 public int ancestor(int v, int w) {
-        if (v == null || w == null) throw new NullPointerException("Nodes are null");
+        // handle input exceptions
+        int limit = sap.V()-1;
+        if (!isValidVertex(v, limit) || !isValidVertex(w, limit)) throw new IndexOutOfBoundsException("Vertex not in Graph");
         BreadthFirstDirectedPaths bfsv = new BreadthFirstDirectedPaths(sap, v);
         BreadthFirstDirectedPaths bfsw = new BreadthFirstDirectedPaths(sap, w);
         int a = -1; // ancestor
@@ -52,7 +56,22 @@ public int ancestor(int v, int w) {
 
 // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
 public int length(Iterable<Integer> v, Iterable<Integer> w) {
+        // handle input exceptions
         if (v == null || w == null) throw new NullPointerException("Iterables are null");
+
+        int limit = sap.V()-1;
+        for (Integer vertex : v) {
+                if (!isValidVertex(vertex, limit)) {
+                        throw new IndexOutOfBoundsException("Vertex not in Graph");
+                }
+        }
+
+        for (Integer vertex : w) {
+                if (!isValidVertex(vertex, limit)) {
+                        throw new IndexOutOfBoundsException("Vertex not in Graph");
+                }
+        }
+
         int a = this.ancestor(v, w);
         if (a == -1) {
                 return -1;
@@ -64,7 +83,21 @@ public int length(Iterable<Integer> v, Iterable<Integer> w) {
 
 // a common ancestor that participates in shortest ancestral path; -1 if no such path
 public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
+        // handle input exceptions
         if (v == null || w == null) throw new NullPointerException("Iterables are null");
+
+        int limit = sap.V()-1;
+        for (Integer vertex : v) {
+                if (!isValidVertex(vertex, limit)) {
+                        throw new IndexOutOfBoundsException("Vertex not in Graph");
+                }
+        }
+
+        for (Integer vertex : w) {
+                if (!isValidVertex(vertex, limit)) {
+                        throw new IndexOutOfBoundsException("Vertex not in Graph");
+                }
+        }
         BreadthFirstDirectedPaths bfsv = new BreadthFirstDirectedPaths(sap, v);
         BreadthFirstDirectedPaths bfsw = new BreadthFirstDirectedPaths(sap, w);
         int a = -1; // ancestor
@@ -81,6 +114,10 @@ public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
                 }
         }
         return a;
+}
+
+private static boolean isValidVertex(int v, int high) {
+        return v >= 0 && v <= high-1;
 }
 
 // do unit testing of this class
