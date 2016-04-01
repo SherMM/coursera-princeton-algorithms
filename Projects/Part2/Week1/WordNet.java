@@ -1,15 +1,16 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Digraph;
-import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.DirectedCycle;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 public class WordNet {
 private In synIn;   // input scanner for synset
 private In hypIn;   // input scanner for hypernyms
 private HashMap<Integer, String> synSet;
-private HashMap<String, List<Integer> > synRev;
+private HashMap<String, List<Integer>> synRev;
 private Digraph wordnet;
 private SAP sapGraph;
 
@@ -20,13 +21,13 @@ public WordNet(String synsets, String hypernyms) {
         synSet = new HashMap<Integer, String>();
 
         // reverse of synset where each word corresponds to its integer keys
-        synRev = new HashMap<String, List<Integer> >();
+        synRev = new HashMap<String, List<Integer>>();
 
         // count number of synsets (== Number of vertexes in digraph)
         int count = 0;
         // read in synset
         synIn = new In(synsets);
-        while(!synIn.isEmpty()) {
+        while (!synIn.isEmpty()) {
                 /*
                    Each line has following format:
                    numeric string, strings (space delimeter), string definition
@@ -36,7 +37,7 @@ public WordNet(String synsets, String hypernyms) {
                 String[] fields = s.split(",");
 
                 // set up synSet hashmap
-                Integer key = Integer.parseInt(fields[0]);
+                int key = Integer.parseInt(fields[0]);
                 String wordString = fields[1];
                 String[] words = fields[1].split(" ");
                 //synSet.put(key, Arrays.asList(words));
@@ -61,7 +62,7 @@ public WordNet(String synsets, String hypernyms) {
         // set up Digraph
         // user number of synsets (count) as number of vertexes
         wordnet = new Digraph(count);
-        while(!hypIn.isEmpty()) {
+        while (!hypIn.isEmpty()) {
                 /*
                     Each line has following format:
                     numeric string, numeric string, numeric string
@@ -94,6 +95,11 @@ public WordNet(String synsets, String hypernyms) {
                 if (wordnet.outdegree(vertex) == 0) {
                         zeroOutDegreeCount++;
                 }
+        }
+
+        // handle if an extra root occurs on last step
+        if (zeroOutDegreeCount > 1) {
+                throw new IllegalArgumentException("Not a rooted DAG");
         }
 
         if (zeroOutDegreeCount == 0) {
@@ -150,7 +156,7 @@ public static void main(String[] args) {
         // get nouns
         Iterable<String> nouns = wordnet.nouns();
         int nounCount = 0;
-        for(String noun : nouns) {
+        for (String noun : nouns) {
                 nounCount++;
         }
         StdOut.println(nounCount);

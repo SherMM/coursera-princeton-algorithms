@@ -2,10 +2,7 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
-import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.BreadthFirstDirectedPaths;
-import edu.princeton.cs.algs4.StdRandom;
-import java.util.*;
 
 public class SAP {
 private static final int INFINITY = Integer.MAX_VALUE;
@@ -44,7 +41,7 @@ public int ancestor(int v, int w) {
                 if (bfsv.hasPathTo(vert) && bfsw.hasPathTo(vert)) {
                         int dv = bfsv.distTo(vert);
                         int dw = bfsw.distTo(vert);
-                        int minDist = Math.min(dv, dw);
+                        int minDist = dv + dw;
                         if (minDist < dist) {
                                 a = vert;
                                 dist = minDist;
@@ -60,13 +57,13 @@ public int length(Iterable<Integer> v, Iterable<Integer> w) {
         if (v == null || w == null) throw new NullPointerException("Iterables are null");
 
         int limit = sap.V()-1;
-        for (Integer vertex : v) {
+        for (int vertex : v) {
                 if (!isValidVertex(vertex, limit)) {
                         throw new IndexOutOfBoundsException("Vertex not in Graph");
                 }
         }
 
-        for (Integer vertex : w) {
+        for (int vertex : w) {
                 if (!isValidVertex(vertex, limit)) {
                         throw new IndexOutOfBoundsException("Vertex not in Graph");
                 }
@@ -87,13 +84,13 @@ public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
         if (v == null || w == null) throw new NullPointerException("Iterables are null");
 
         int limit = sap.V()-1;
-        for (Integer vertex : v) {
+        for (int vertex : v) {
                 if (!isValidVertex(vertex, limit)) {
                         throw new IndexOutOfBoundsException("Vertex not in Graph");
                 }
         }
 
-        for (Integer vertex : w) {
+        for (int vertex : w) {
                 if (!isValidVertex(vertex, limit)) {
                         throw new IndexOutOfBoundsException("Vertex not in Graph");
                 }
@@ -106,7 +103,7 @@ public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
                 if (bfsv.hasPathTo(vert) && bfsw.hasPathTo(vert)) {
                         int dv = bfsv.distTo(vert);
                         int dw = bfsw.distTo(vert);
-                        int minDist = Math.min(dv, dw);
+                        int minDist = dv + dw;
                         if (minDist < dist) {
                                 a = vert;
                                 dist = minDist;
@@ -117,7 +114,7 @@ public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
 }
 
 private static boolean isValidVertex(int v, int high) {
-        return v >= 0 && v <= high-1;
+        return v >= 0 && v <= high;
 }
 
 // do unit testing of this class
@@ -126,24 +123,12 @@ public static void main(String[] args) {
         Digraph G = new Digraph(in);
         SAP sap = new SAP(G);
 
-        /*
-           while (!StdIn.isEmpty()) {
+        while (!StdIn.isEmpty()) {
                 int v = StdIn.readInt();
                 int w = StdIn.readInt();
                 int length   = sap.length(v, w);
                 int ancestor = sap.ancestor(v, w);
                 StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
-           }
-         */
-
-        Stack<Integer> v = new Stack<Integer>();
-        Stack<Integer> w = new Stack<Integer>();
-        v.push(1);
-        v.push(4);
-        w.push(2);
-
-        int length = sap.length(v, w);
-        int ancestor = sap.ancestor(v, w);
-        StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
+        }
 }
 }
