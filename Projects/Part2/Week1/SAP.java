@@ -2,7 +2,9 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.BreadthFirstDirectedPaths;
+import edu.princeton.cs.algs4.StdRandom;
 import java.util.*;
 
 public class SAP {
@@ -11,11 +13,13 @@ private Digraph sap;
 
 // constructor takes a digraph (not necessarily a DAG)
 public SAP(Digraph G) {
+        if (G == null) throw new NullPointerException("Graph is null");
         sap = new Digraph(G);
 }
 
 // length of shortest ancestral path between v and w; -1 if no such path
 public int length(int v, int w) {
+        if (v == null || w == null) throw new NullPointerException("Nodes are null");
         int a = this.ancestor(v, w);
         if (a == -1) {
                 return -1;
@@ -27,6 +31,7 @@ public int length(int v, int w) {
 
 // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
 public int ancestor(int v, int w) {
+        if (v == null || w == null) throw new NullPointerException("Nodes are null");
         BreadthFirstDirectedPaths bfsv = new BreadthFirstDirectedPaths(sap, v);
         BreadthFirstDirectedPaths bfsw = new BreadthFirstDirectedPaths(sap, w);
         int a = -1; // ancestor
@@ -47,12 +52,35 @@ public int ancestor(int v, int w) {
 
 // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
 public int length(Iterable<Integer> v, Iterable<Integer> w) {
-        return 1;
+        if (v == null || w == null) throw new NullPointerException("Iterables are null");
+        int a = this.ancestor(v, w);
+        if (a == -1) {
+                return -1;
+        }
+        BreadthFirstDirectedPaths bfsv = new BreadthFirstDirectedPaths(sap, v);
+        BreadthFirstDirectedPaths bfsw = new BreadthFirstDirectedPaths(sap, w);
+        return bfsv.distTo(a) + bfsw.distTo(a);
 }
 
 // a common ancestor that participates in shortest ancestral path; -1 if no such path
 public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
-        return 1;
+        if (v == null || w == null) throw new NullPointerException("Iterables are null");
+        BreadthFirstDirectedPaths bfsv = new BreadthFirstDirectedPaths(sap, v);
+        BreadthFirstDirectedPaths bfsw = new BreadthFirstDirectedPaths(sap, w);
+        int a = -1; // ancestor
+        int dist = INFINITY; // shortest distance from ancestor to node v or w
+        for (int vert = 0; vert < sap.V(); vert++) {
+                if (bfsv.hasPathTo(vert) && bfsw.hasPathTo(vert)) {
+                        int dv = bfsv.distTo(vert);
+                        int dw = bfsw.distTo(vert);
+                        int minDist = Math.min(dv, dw);
+                        if (minDist < dist) {
+                                a = vert;
+                                dist = minDist;
+                        }
+                }
+        }
+        return a;
 }
 
 // do unit testing of this class
@@ -60,12 +88,25 @@ public static void main(String[] args) {
         In in = new In(args[0]);
         Digraph G = new Digraph(in);
         SAP sap = new SAP(G);
-        while (!StdIn.isEmpty()) {
+
+        /*
+           while (!StdIn.isEmpty()) {
                 int v = StdIn.readInt();
                 int w = StdIn.readInt();
                 int length   = sap.length(v, w);
                 int ancestor = sap.ancestor(v, w);
                 StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
-        }
+           }
+         */
+
+        Stack<Integer> v = new Stack<Integer>();
+        Stack<Integer> w = new Stack<Integer>();
+        v.push(1);
+        v.push(4);
+        w.push(2);
+
+        int length = sap.length(v, w);
+        int ancestor = sap.ancestor(v, w);
+        StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
 }
 }
