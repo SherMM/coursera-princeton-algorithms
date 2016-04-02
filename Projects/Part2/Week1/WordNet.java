@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class WordNet {
-private In synIn;   // input scanner for synset
-private In hypIn;   // input scanner for hypernyms
 private HashMap<Integer, String> synSet;
 private HashMap<String, List<Integer>> synRev;
 private Digraph wordnet;
@@ -26,7 +24,7 @@ public WordNet(String synsets, String hypernyms) {
         // count number of synsets (== Number of vertexes in digraph)
         int count = 0;
         // read in synset
-        synIn = new In(synsets);
+        In synIn = new In(synsets);
         while (!synIn.isEmpty()) {
                 /*
                    Each line has following format:
@@ -58,7 +56,7 @@ public WordNet(String synsets, String hypernyms) {
         }
 
         // read in hypernyms
-        hypIn = new In(hypernyms);
+        In hypIn = new In(hypernyms);
         // set up Digraph
         // user number of synsets (count) as number of vertexes
         wordnet = new Digraph(count);
