@@ -5,11 +5,25 @@ import edu.princeton.cs.algs4.StdOut;
 public class SeamCarver {
 
 private Picture seamPic;
+private int w; // width
+private int h; // height
+private double[][] matrix; // enegry matrix
 
 // create a seam carver object based on the given picture
 public SeamCarver(Picture picture) {
         // don't mutate original picture
         seamPic = new Picture(picture);
+        w = seamPic.width();
+        h = seamPic.height();
+
+        // initialze energy matrix
+        matrix = new double[h][w];
+        for (int i = 0; i < h; i++) {
+                for (int j = 0; j < w; j++) {
+                        matrix[i][j] = 0.0;
+                }
+        }
+
 }
 
 // current picture
@@ -19,18 +33,26 @@ public Picture picture() {
 
 // width of current picture
 public int width() {
-        return seamPic.width();
+        return this.w;
+}
+
+private void setWidth(int width) {
+        this.w = width;
 }
 
 // height of current picture
 public int height() {
-        return seamPic.height();
+        return this.h;
+}
+
+private void setHeight(int height) {
+        this.h = height;
 }
 
 // energy of pixel at column x and row y
 public double energy(int x, int y) {
         if (isOnBorder(x, y, this.height(), this.width())) {
-          return 1000.0;
+                return 1000.0;
         }
 
         double xgrad = this.xGradient(x, y);
@@ -98,11 +120,25 @@ private static boolean isOnBorder(int x, int y, int height, int width) {
 
    }
 
-   // sequence of indices for vertical seam
-   public int[] findVerticalSeam() {
-
-   }
  */
+// sequence of indices for vertical seam
+public int[] findVerticalSeam() {
+        // create energy matrix
+        for (int row = 0; row < this.height(); row++) {
+                for (int col = 0; col < this.width(); col++) {
+                        this.matrix[row][col] = this.energy(col, row);
+                }
+        }
+
+        int[] a = {1, 2};
+        return a;
+}
+
+// returns adjacent pixels
+private int[] adj(int x, int y) {
+
+}
+
 
 // remove horizontal seam from current picture
 public void removeHorizontalSeam(int[] seam) {
@@ -112,5 +148,13 @@ public void removeHorizontalSeam(int[] seam) {
 // remove vertical seam from current picture
 public void removeVerticalSeam(int[] seam) {
 
+}
+
+public static void main(String[] args) {
+        Picture picture = new Picture(args[0]);
+        StdOut.printf("image is %d pixels wide by %d pixels high.\n", picture.width(), picture.height());
+
+        SeamCarver sc = new SeamCarver(picture);
+        sc.findVerticalSeam();
 }
 }
