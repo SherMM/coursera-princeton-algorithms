@@ -1,13 +1,17 @@
 import java.awt.Color;
 import edu.princeton.cs.algs4.Picture;
 import edu.princeton.cs.algs4.StdOut;
+import java.util.Arrays;
 
 public class SeamCarver {
 
 private Picture seamPic;
-private int w; // width
-private int h; // height
+private int w; // width of picture
+private int h; // height of picture
 private double[][] matrix; // enegry matrix
+
+private static final double INFINITY = Double.POSITIVE_INFINITY;
+private double[][] distances; // for storing shortest path distances
 
 // create a seam carver object based on the given picture
 public SeamCarver(Picture picture) {
@@ -16,7 +20,7 @@ public SeamCarver(Picture picture) {
         w = seamPic.width();
         h = seamPic.height();
 
-        // initialze energy matrix
+        // initialize energy matrix
         matrix = new double[h][w];
         for (int i = 0; i < h; i++) {
                 for (int j = 0; j < w; j++) {
@@ -24,6 +28,13 @@ public SeamCarver(Picture picture) {
                 }
         }
 
+        // initialize distance matrix
+        distances = new double[h][w];
+        for (int i = 0; i < h; i++) {
+                for (int j = 0; j < w; j++) {
+                        distance[i][j] = INFINITY;
+                }
+        }
 }
 
 // current picture
@@ -130,13 +141,40 @@ public int[] findVerticalSeam() {
                 }
         }
 
+        for (int i = 0; i < this.height()-1; i++) {
+                for (int j = 0; j < this.width(); j++) {
+                        for (int k : this.adj(i, j)) {
+                                StdOut.println(i+1 + ", " + k);
+                        }
+                }
+        }
+
         int[] a = {1, 2};
         return a;
 }
 
 // returns adjacent pixels
-private int[] adj(int x, int y) {
-
+private int[] adj(int i, int j) {
+        // returns list of column indexes (x-indexes are assumed)
+        int[] adjPix;
+        if (j == 0) {
+                // if at left edge of picture, only 2 adjacent pixels
+                adjPix = new int[2];
+                adjPix[0] = j;
+                adjPix[1] = j+1;
+        } else if (j == this.width()-1) {
+                // if at right edge of picture, only 2 adjacent pixels
+                adjPix = new int[2];
+                adjPix[0] = j-1;
+                adjPix[1] = j;
+        } else {
+                // all other pixels have three adjacent, lower pixel
+                adjPix = new int[3];
+                adjPix[0] = j-1;
+                adjPix[1] = j;
+                adjPix[2] = j+1;
+        }
+        return adjPix;
 }
 
 
