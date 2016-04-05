@@ -28,13 +28,9 @@ public SeamCarver(Picture picture) {
                 }
         }
 
-        // initialize distance matrix
+        // setup distance matrix
+        // will be initialized later
         distances = new double[h][w];
-        for (int i = 0; i < h; i++) {
-                for (int j = 0; j < w; j++) {
-                        distance[i][j] = INFINITY;
-                }
-        }
 }
 
 // current picture
@@ -134,6 +130,18 @@ private static boolean isOnBorder(int x, int y, int height, int width) {
  */
 // sequence of indices for vertical seam
 public int[] findVerticalSeam() {
+        // initialize distances matrix
+        for (int i = 0; i < h; i++) {
+                for (int j = 0; j < w; j++) {
+                        // all first row pixels are set to 100 energy
+                        if (i == 0) {
+                                this.distances[i][j] = 1000.0;
+                        } else {
+                                this.distances[i][j] = INFINITY;
+                        }
+                }
+        }
+
         // create energy matrix
         for (int row = 0; row < this.height(); row++) {
                 for (int col = 0; col < this.width(); col++) {
@@ -141,12 +149,28 @@ public int[] findVerticalSeam() {
                 }
         }
 
+        // iterate through pixels (nodes) in picture
         for (int i = 0; i < this.height()-1; i++) {
                 for (int j = 0; j < this.width(); j++) {
-                        for (int k : this.adj(i, j)) {
-                                StdOut.println(i+1 + ", " + k);
+                        // relax adjacent edges of pixels
+                        for (int k : this.adj(j)) {
+                                double prevDist = this.distances[i][j];
+                                double currDist = this.distances[i+1][k];
+                                double currEnergy = this.matrix[i+1][k];
+                                if (prevDist != INFINITY && (currDist > prevDist + currEnergy)) {
+                                        this.distances[i+1][k] = prevDist + currEnergy;
+                                }
                         }
                 }
+        }
+
+        // debug distances
+        for (int i = 0; i < h; i++) {
+                for (int j = 0; j < w; j++) {
+                        // all first row pixels are set to 100 energy
+                        StdOut.printf("%9.0f ", this.distances[i][j]);
+                }
+                StdOut.println();
         }
 
         int[] a = {1, 2};
@@ -154,7 +178,7 @@ public int[] findVerticalSeam() {
 }
 
 // returns adjacent pixels
-private int[] adj(int i, int j) {
+private int[] adj(int j) {
         // returns list of column indexes (x-indexes are assumed)
         int[] adjPix;
         if (j == 0) {
