@@ -153,7 +153,7 @@ public int[] findVerticalSeam() {
         for (int i = 0; i < this.height()-1; i++) {
                 for (int j = 0; j < this.width(); j++) {
                         // relax adjacent edges of pixels
-                        for (int k : this.adj(j)) {
+                        for (int k : adj(j, this.width())) {
                                 double prevDist = this.distances[i][j];
                                 double currDist = this.distances[i+1][k];
                                 double currEnergy = this.matrix[i+1][k];
@@ -165,20 +165,41 @@ public int[] findVerticalSeam() {
         }
 
         // debug distances
-        for (int i = 0; i < h; i++) {
+        /*
+           for (int i = 0; i < h; i++) {
                 for (int j = 0; j < w; j++) {
                         // all first row pixels are set to 100 energy
                         StdOut.printf("%9.0f ", this.distances[i][j]);
                 }
                 StdOut.println();
-        }
+           }
+         */
 
-        int[] a = {1, 2};
-        return a;
+        // setup array to store array, which stores column indexes
+        int[] seam = new int[this.height()];
+
+        // reconstruct shortest energy path from bottom row to top row
+        // first find column of lowest energy path
+        int minCol = findMinPathColumn(this.height()-1, this.distances[this.height()-1]);
+
+
+        return seam;
+}
+
+private static int findMinPathColumn(int row, double[] lastRow) {
+        int col = 0;
+        double lowest = lastRow[col];
+        for (int j = 1; j < lastRow.length; j++) {
+                if (lastRow[j] < lowest) {
+                        lowest = lastRow[j];
+                        col = j;
+                }
+        }
+        return col;
 }
 
 // returns adjacent pixels
-private int[] adj(int j) {
+private static int[] adj(int j, int width) {
         // returns list of column indexes (x-indexes are assumed)
         int[] adjPix;
         if (j == 0) {
@@ -186,7 +207,7 @@ private int[] adj(int j) {
                 adjPix = new int[2];
                 adjPix[0] = j;
                 adjPix[1] = j+1;
-        } else if (j == this.width()-1) {
+        } else if (j == width-1) {
                 // if at right edge of picture, only 2 adjacent pixels
                 adjPix = new int[2];
                 adjPix[0] = j-1;
