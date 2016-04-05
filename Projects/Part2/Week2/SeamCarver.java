@@ -203,14 +203,19 @@ public int[] findVerticalSeam() {
         }
         */
 
+        // first find column of lowest energy path
+        int minCol = findMinPathColumn(this.height()-1, this.width(), this.distances);
+
         // setup array to store array, which stores column indexes
         int[] seam = new int[this.height()];
 
-        // first find column of lowest energy path
-
-        int minCol = findMinPathColumn(this.height()-1, this.width(), this.distances);
-
         // reconstruct shortest energy path from bottom row to top row
+        int currRow = this.height()-1;
+
+        int index = convert2Dto1D(currRow, minCol, this.width());
+        while (currRow < 0) {
+
+        }
 
         return seam;
 }
