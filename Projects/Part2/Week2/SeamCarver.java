@@ -11,7 +11,8 @@ private int h; // height of picture
 private double[][] matrix; // enegry matrix
 
 private static final double INFINITY = Double.POSITIVE_INFINITY;
-private double[][] distances; // for storing shortest path distances
+private double[] distances; // for storing shortest path distances
+private int[] parents; // for storing parent pixels column indexes
 
 // create a seam carver object based on the given picture
 public SeamCarver(Picture picture) {
@@ -30,7 +31,8 @@ public SeamCarver(Picture picture) {
 
         // setup distance matrix
         // will be initialized later
-        distances = new double[h][w];
+        distances = new double[h*w];
+        parents = new int[h*w];
 }
 
 // current picture
@@ -131,14 +133,23 @@ private static boolean isOnBorder(int x, int y, int height, int width) {
 // sequence of indices for vertical seam
 public int[] findVerticalSeam() {
         // initialize distances matrix
-        for (int i = 0; i < h; i++) {
-                for (int j = 0; j < w; j++) {
+        for (int i = 0; i < this.height(); i++) {
+                for (int j = 0; j < this.width(); j++) {
                         // all first row pixels are set to 100 energy
+                        int index = convert2Dto1D(i, j, this.width());
                         if (i == 0) {
-                                this.distances[i][j] = 1000.0;
+                                this.distances[index] = 1000.0;
                         } else {
-                                this.distances[i][j] = INFINITY;
+                                this.distances[index] = INFINITY;
                         }
+                }
+        }
+
+        // initialize parents matrix
+        for (int i = 0; i < this.height(); i++) {
+                for (int j = 0; j < this.width(); j++) {
+                        int index = convert2Dto1D(i, j, this.width());
+                        this.parents[index] = -1;
                 }
         }
 
@@ -154,44 +165,68 @@ public int[] findVerticalSeam() {
                 for (int j = 0; j < this.width(); j++) {
                         // relax adjacent edges of pixels
                         for (int k : adj(j, this.width())) {
-                                double prevDist = this.distances[i][j];
-                                double currDist = this.distances[i+1][k];
+                                // previous pixel index
+                                int pindex = convert2Dto1D(i, j, this.width());
+                                // current pixel index
+                                int cindex = convert2Dto1D(i+1, k, this.width());
+
+                                double prevDist = this.distances[pindex];
+                                double currDist = this.distances[cindex];
                                 double currEnergy = this.matrix[i+1][k];
                                 if (prevDist != INFINITY && (currDist > prevDist + currEnergy)) {
-                                        this.distances[i+1][k] = prevDist + currEnergy;
+                                        this.distances[cindex] = prevDist + currEnergy;
+                                        this.parents[cindex] = j;
                                 }
                         }
                 }
         }
 
-        // debug distances
         /*
-           for (int i = 0; i < h; i++) {
+        // debug distances
+        for (int i = 0; i < h; i++) {
                 for (int j = 0; j < w; j++) {
                         // all first row pixels are set to 100 energy
-                        StdOut.printf("%9.0f ", this.distances[i][j]);
+                        int index = convert2Dto1D(i, j, this.width());
+                        StdOut.printf("%9.0f ", this.distances[index]);
                 }
                 StdOut.println();
-           }
-         */
+        }
+
+        // debug parents
+        for (int i = 0; i < h; i++) {
+                for (int j = 0; j < w; j++) {
+                        // all first row pixels are set to 100 energy
+                        int index = convert2Dto1D(i, j, this.width());
+                        StdOut.print(this.parents[index] + " ");
+                }
+                StdOut.println();
+        }
+        */
 
         // setup array to store array, which stores column indexes
         int[] seam = new int[this.height()];
 
-        // reconstruct shortest energy path from bottom row to top row
         // first find column of lowest energy path
-        int minCol = findMinPathColumn(this.height()-1, this.distances[this.height()-1]);
 
+        int minCol = findMinPathColumn(this.height()-1, this.width(), this.distances);
+
+        // reconstruct shortest energy path from bottom row to top row
 
         return seam;
 }
 
-private static int findMinPathColumn(int row, double[] lastRow) {
+private static int convert2Dto1D(int i, int j, int cols) {
+        return i * cols + j; // cols is number of columns
+}
+
+private static int findMinPathColumn(int row, int width, double[] dists) {
         int col = 0;
-        double lowest = lastRow[col];
-        for (int j = 1; j < lastRow.length; j++) {
-                if (lastRow[j] < lowest) {
-                        lowest = lastRow[j];
+        int index = convert2Dto1D(row, col, width);
+        double lowest = dists[index];
+        for (int j = 1; j < width; j++) {
+                int idx = convert2Dto1D(row, j, width);
+                if (dists[idx] < lowest) {
+                        lowest = dists[idx];
                         col = j;
                 }
         }
