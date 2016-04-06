@@ -23,9 +23,16 @@ public SeamCarver(Picture picture) {
 
         // initialize energy matrix
         matrix = new double[h][w];
-        for (int i = 0; i < h; i++) {
-                for (int j = 0; j < w; j++) {
-                        matrix[i][j] = 0.0;
+        for (int i = 0; i < this.height(); i++) {
+                for (int j = 0; j < this.width(); j++) {
+                        this.matrix[i][j] = 0.0;
+                }
+        }
+
+        // create energy matrix
+        for (int row = 0; row < this.height(); row++) {
+                for (int col = 0; col < this.width(); col++) {
+                        this.matrix[row][col] = this.energy(col, row);
                 }
         }
 
@@ -123,13 +130,31 @@ private static boolean isOnBorder(int x, int y, int height, int width) {
         return false;
 }
 
-/*
-   // sequence of indices for horizontal seam
-   public int[] findHorizontalSeam() {
+// sequence of indices for horizontal seam
+public int[] findHorizontalSeam() {
+      this.transpose();
+      int[] seam = this.findVerticalSeam();
+      this.transpose();
+      return seam;
+}
 
-   }
+private void transpose() {
 
- */
+  // initialize energy matrix
+  double[][] temp = new double[this.width()][this.height()];
+  for (int i = 0; i < this.width(); i++) {
+          for (int j = 0; j < this.height(); j++) {
+                  temp[i][j] = this.matrix[j][i];
+          }
+  }
+
+  // swap values for height and width
+  int holder = this.height();
+  this.h = this.width();
+  this.w = holder;
+  this.matrix = temp;
+}
+
 // sequence of indices for vertical seam
 public int[] findVerticalSeam() {
         // initialize distances matrix
@@ -149,14 +174,8 @@ public int[] findVerticalSeam() {
         for (int i = 0; i < this.height(); i++) {
                 for (int j = 0; j < this.width(); j++) {
                         int index = convert2Dto1D(i, j, this.width());
-                        this.parents[index] = -1;
-                }
-        }
-
-        // create energy matrix
-        for (int row = 0; row < this.height(); row++) {
-                for (int col = 0; col < this.width(); col++) {
-                        this.matrix[row][col] = this.energy(col, row);
+                        // set all to column index, initially
+                        this.parents[index] = j;
                 }
         }
 
@@ -181,40 +200,19 @@ public int[] findVerticalSeam() {
                 }
         }
 
-        /*
-        // debug distances
-        for (int i = 0; i < h; i++) {
-                for (int j = 0; j < w; j++) {
-                        // all first row pixels are set to 100 energy
-                        int index = convert2Dto1D(i, j, this.width());
-                        StdOut.printf("%9.0f ", this.distances[index]);
-                }
-                StdOut.println();
-        }
-
-        // debug parents
-        for (int i = 0; i < h; i++) {
-                for (int j = 0; j < w; j++) {
-                        // all first row pixels are set to 100 energy
-                        int index = convert2Dto1D(i, j, this.width());
-                        StdOut.print(this.parents[index] + " ");
-                }
-                StdOut.println();
-        }
-        */
-
-        // first find column of lowest energy path
-        int minCol = findMinPathColumn(this.height()-1, this.width(), this.distances);
-
         // setup array to store array, which stores column indexes
         int[] seam = new int[this.height()];
 
+        // first find column of lowest energy path
+        int currCol = findMinPathColumn(this.height()-1, this.width(), this.distances);
         // reconstruct shortest energy path from bottom row to top row
         int currRow = this.height()-1;
 
-        int index = convert2Dto1D(currRow, minCol, this.width());
-        while (currRow < 0) {
-
+        while (currRow >= 0) {
+                seam[currRow] = currCol;
+                int index = convert2Dto1D(currRow, currCol, this.width());
+                currCol = this.parents[index];
+                currRow -= 1;
         }
 
         return seam;
@@ -278,6 +276,7 @@ public static void main(String[] args) {
         StdOut.printf("image is %d pixels wide by %d pixels high.\n", picture.width(), picture.height());
 
         SeamCarver sc = new SeamCarver(picture);
-        sc.findVerticalSeam();
+        StdOut.println(Arrays.toString(sc.findVerticalSeam()));
+        StdOut.println(Arrays.toString(sc.findHorizontalSeam()));
 }
 }
