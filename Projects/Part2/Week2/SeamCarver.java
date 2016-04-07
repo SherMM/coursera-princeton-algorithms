@@ -1,17 +1,15 @@
 import java.awt.Color;
 import edu.princeton.cs.algs4.Picture;
 import edu.princeton.cs.algs4.StdOut;
-import java.util.Arrays;
 
 public class SeamCarver {
 
+private static final double INFINITY = Double.POSITIVE_INFINITY;
 private Picture seamPic;
 private int[][] picColors; // for storing RGB ints
 private int w; // width of picture
 private int h; // height of picture
 private double[][] matrix; // enegry matrix
-
-private static final double INFINITY = Double.POSITIVE_INFINITY;
 private double[] distances; // for storing shortest path distances
 private int[] parents; // for storing parent pixels column indexes
 
@@ -278,7 +276,11 @@ private static int findMinPathColumn(int row, int width, double[] dists) {
 private static int[] adj(int j, int width) {
         // returns list of column indexes (x-indexes are assumed)
         int[] adjPix;
-        if (j == 0) {
+        // when width is 1, only return lower adjacent pixel
+        if (width == 1) {
+                adjPix = new int[1];
+                adjPix[0] = j;
+        } else if (j == 0) {
                 // if at left edge of picture, only 2 adjacent pixels
                 adjPix = new int[2];
                 adjPix[0] = j;
@@ -309,7 +311,7 @@ public void removeHorizontalSeam(int[] seam) {
                 throw new IllegalArgumentException("Picture not tall enough");
         }
 
-        if (seam.length > this.width() || !isValidSeam(seam, 0, this.height()-1)) {
+        if (seam.length != this.width() || !isValidSeam(seam, 0, this.height()-1)) {
                 throw new IllegalArgumentException("Invalid Seam");
         }
 
@@ -328,8 +330,8 @@ public void removeVerticalSeam(int[] seam) {
                 throw new IllegalArgumentException("Picture not wide enough");
         }
 
-        if (seam.length > this.height() || !isValidSeam(seam, 0, this.width()-1)) {
-                throw new IllegalArgumentException("Invallid Seam");
+        if (seam.length != this.height() || !isValidSeam(seam, 0, this.width()-1)) {
+                throw new IllegalArgumentException("Invalid Seam");
         }
 
 
@@ -367,13 +369,16 @@ public void removeVerticalSeam(int[] seam) {
 }
 
 private static boolean isValidSeam(int[] seam, int low, int high) {
-        // return false if two consecture entries differ by more than one
-        for (int i = 0; i < seam.length-2; i++) {
-                int val1 = seam[i];
-                int val2 = seam[i+1];
-                if (!inValidRange(val1, low, high)) {
+        // check that all values are in correct range
+        for (int i = 0; i < seam.length; i++) {
+                if (!inValidRange(seam[i], low, high)) {
                         return false;
                 }
+        }
+        // return false if two consecture entries differ by more than one
+        for (int i = 0; i <= seam.length-2; i++) {
+                int val1 = seam[i];
+                int val2 = seam[i+1];
                 if (Math.abs(val1-val2) > 1) {
                         return false;
                 }
@@ -385,10 +390,15 @@ public static void main(String[] args) {
         Picture picture = new Picture(args[0]);
         StdOut.printf("image is %d pixels wide by %d pixels high.\n", picture.width(), picture.height());
 
-        SeamCarver sc = new SeamCarver(picture);
-        int[] seam = sc.findHorizontalSeam();
-        StdOut.println(Arrays.toString(seam));
-        sc.removeHorizontalSeam(seam);
+        /*
+           SeamCarver sc = new SeamCarver(picture);
+           int[] seam = sc.findHorizontalSeam();
+           StdOut.println(Arrays.toString(seam));
+           sc.removeHorizontalSeam(seam);
+         */
 
+        SeamCarver sc = new SeamCarver(picture);
+        int[] invalidSeam = { -1 };
+        sc.removeHorizontalSeam(invalidSeam);
 }
 }
