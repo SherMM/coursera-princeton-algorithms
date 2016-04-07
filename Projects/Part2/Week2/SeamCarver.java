@@ -6,6 +6,7 @@ import java.util.Arrays;
 public class SeamCarver {
 
 private Picture seamPic;
+private int[][] picColors; // for storing RGB ints
 private int w; // width of picture
 private int h; // height of picture
 private double[][] matrix; // enegry matrix
@@ -21,6 +22,14 @@ public SeamCarver(Picture picture) {
         w = seamPic.width();
         h = seamPic.height();
 
+        // initialize picColors matrix
+        picColors = new int[h][w];
+        for (int i = 0; i < this.height(); i++) {
+                for (int j = 0; j < this.width(); j++) {
+                        picColors[i][j] = seamPic.get(j, i).getRGB();
+                }
+        }
+
         // initialize energy matrix
         matrix = new double[h][w];
         for (int i = 0; i < this.height(); i++) {
@@ -29,7 +38,7 @@ public SeamCarver(Picture picture) {
                 }
         }
 
-        // create energy matrix
+        // create initial energy matrix
         for (int row = 0; row < this.height(); row++) {
                 for (int col = 0; col < this.width(); col++) {
                         this.matrix[row][col] = this.energy(col, row);
@@ -79,13 +88,13 @@ public double energy(int x, int y) {
 
 private double xGradient(int x, int y) {
         // get values at x+1, y pixel
-        Color colorHi = seamPic.get(x+1, y);
+        Color colorHi = new Color(picColors[y][x+1]);
         int rh = colorHi.getRed();
         int gh = colorHi.getGreen();
         int bh = colorHi.getBlue();
 
         // get values at x-1, y pixel
-        Color colorLo = seamPic.get(x-1, y);
+        Color colorLo = new Color(picColors[y][x-1]);
         int rl = colorLo.getRed();
         int gl = colorLo.getGreen();
         int bl = colorLo.getBlue();
@@ -102,13 +111,13 @@ private double xGradient(int x, int y) {
 
 private double yGradient(int x, int y) {
         // get values at x+1, y pixel
-        Color colorHi = seamPic.get(x, y+1);
+        Color colorHi = new Color(picColors[y+1][x]);
         int rh = colorHi.getRed();
         int gh = colorHi.getGreen();
         int bh = colorHi.getBlue();
 
         // get values at x-1, y pixel
-        Color colorLo = seamPic.get(x, y-1);
+        Color colorLo = new Color(picColors[y-1][x]);
         int rl = colorLo.getRed();
         int gl = colorLo.getGreen();
         int bl = colorLo.getBlue();
@@ -132,27 +141,36 @@ private static boolean isOnBorder(int x, int y, int height, int width) {
 
 // sequence of indices for horizontal seam
 public int[] findHorizontalSeam() {
-      this.transpose();
-      int[] seam = this.findVerticalSeam();
-      this.transpose();
-      return seam;
+        this.transpose();
+        int[] seam = this.findVerticalSeam();
+        this.transpose();
+        return seam;
 }
 
 private void transpose() {
 
-  // initialize energy matrix
-  double[][] temp = new double[this.width()][this.height()];
-  for (int i = 0; i < this.width(); i++) {
-          for (int j = 0; j < this.height(); j++) {
-                  temp[i][j] = this.matrix[j][i];
-          }
-  }
+        // initialize energy matrix
+        double[][] tempe = new double[this.width()][this.height()];
+        for (int i = 0; i < this.width(); i++) {
+                for (int j = 0; j < this.height(); j++) {
+                        tempe[i][j] = this.matrix[j][i];
+                }
+        }
 
-  // swap values for height and width
-  int holder = this.height();
-  this.h = this.width();
-  this.w = holder;
-  this.matrix = temp;
+        // initialize picColors temp matrix
+        int[][] tempc = new int[this.width()][this.height()];
+        for (int i = 0; i < this.width(); i++) {
+                for (int j = 0; j < this.height(); j++) {
+                        tempc[i][j] = this.picColors[j][i];
+                }
+        }
+
+        // swap values for height and width
+        int holder = this.height();
+        this.setHeight(this.width());
+        this.setWidth(holder);
+        this.matrix = tempe;
+        this.picColors = tempc;
 }
 
 // sequence of indices for vertical seam
@@ -269,6 +287,17 @@ public void removeHorizontalSeam(int[] seam) {
 // remove vertical seam from current picture
 public void removeVerticalSeam(int[] seam) {
 
+        // shift rows to overwrite removed index
+        for (int row = 0; row < this.height(); row++) {
+                // seam is array of column indexes for each row
+                int seamCol = seam[row];
+                // number of elements to shift
+                int shift = this.width() - seamCol - 1;
+                System.arraycopy(this.picColors[row], seamCol+1, this.picColors[row], seamCol, shift);
+        }
+
+        // update width
+        this.setWidth(this.width()-1);
 }
 
 public static void main(String[] args) {
@@ -276,7 +305,9 @@ public static void main(String[] args) {
         StdOut.printf("image is %d pixels wide by %d pixels high.\n", picture.width(), picture.height());
 
         SeamCarver sc = new SeamCarver(picture);
-        StdOut.println(Arrays.toString(sc.findVerticalSeam()));
-        StdOut.println(Arrays.toString(sc.findHorizontalSeam()));
+        int[] seam = sc.findVerticalSeam();
+        StdOut.println(Arrays.toString(seam));
+        sc.removeVerticalSeam(seam);
+
 }
 }
