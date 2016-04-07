@@ -293,11 +293,31 @@ public void removeVerticalSeam(int[] seam) {
                 int seamCol = seam[row];
                 // number of elements to shift
                 int shift = this.width() - seamCol - 1;
+                // shift in matrix of RGB int values
                 System.arraycopy(this.picColors[row], seamCol+1, this.picColors[row], seamCol, shift);
+                // shift in pixel energy value matrix
+                System.arraycopy(this.matrix[row], seamCol+1, this.matrix[row], seamCol, shift);
         }
 
         // update width
         this.setWidth(this.width()-1);
+
+        // recalculate energies around removed seam
+        for (int row = 0; row < this.height(); row++) {
+                int seamCol = seam[row];
+                if (seamCol == 0) {
+                        // removed pixel was on picture's left edge
+                        this.matrix[row][seamCol] = this.energy(seamCol, row);
+                } else if (seamCol == this.width()) {
+                        // removed pixel was on picture's right edge
+                        this.matrix[row][seamCol-1] = this.energy(seamCol-1, row);
+                } else {
+                        // removed pixel was somewere in middle of row of pixels
+                        //handle left pixel
+                        this.matrix[row][seamCol-1] = this.energy(seamCol-1, row);
+                        this.matrix[row][seamCol] = this.energy(seamCol, row);
+                }
+        }
 }
 
 public static void main(String[] args) {
