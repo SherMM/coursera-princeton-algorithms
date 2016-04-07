@@ -17,6 +17,9 @@ private int[] parents; // for storing parent pixels column indexes
 
 // create a seam carver object based on the given picture
 public SeamCarver(Picture picture) {
+        if (picture == null) {
+                throw new NullPointerException("Picture can't be null");
+        }
         // don't mutate original picture
         seamPic = new Picture(picture);
         w = seamPic.width();
@@ -53,7 +56,17 @@ public SeamCarver(Picture picture) {
 
 // current picture
 public Picture picture() {
-        return seamPic;
+        Picture pic = new Picture(this.width(), this.height());
+        // add colors to picture
+        for (int row = 0; row < this.height(); row++) {
+                for (int col = 0; col < this.width(); col++) {
+                        // color from color matrix
+                        Color color = new Color(this.picColors[row][col]);
+                        pic.set(col, row, color);
+                }
+        }
+
+        return pic;
 }
 
 // width of current picture
@@ -76,6 +89,9 @@ private void setHeight(int height) {
 
 // energy of pixel at column x and row y
 public double energy(int x, int y) {
+        if (!inValidRange(x, 0, this.width()-1) || !inValidRange(y, 0, this.height()-1)) {
+                throw new IndexOutOfBoundsException("X or Y value out of range");
+        }
         if (isOnBorder(x, y, this.height(), this.width())) {
                 return 1000.0;
         }
@@ -84,6 +100,10 @@ public double energy(int x, int y) {
         double ygrad = this.yGradient(x, y);
 
         return Math.sqrt(xgrad + ygrad);
+}
+
+private static boolean inValidRange(int val, int low, int high) {
+        return (val >= low) && (val <= high);
 }
 
 private double xGradient(int x, int y) {
@@ -281,11 +301,37 @@ private static int[] adj(int j, int width) {
 
 // remove horizontal seam from current picture
 public void removeHorizontalSeam(int[] seam) {
+        if (seam == null) {
+                throw new NullPointerException("Seam can't be null");
+        }
 
+        if (this.height() <= 1) {
+                throw new IllegalArgumentException("Picture not tall enough");
+        }
+
+        if (seam.length > this.width() || !isValidSeam(seam, 0, this.height()-1)) {
+                throw new IllegalArgumentException("Invalid Seam");
+        }
+
+        this.transpose();
+        this.removeVerticalSeam(seam);
+        this.transpose();
 }
 
 // remove vertical seam from current picture
 public void removeVerticalSeam(int[] seam) {
+        if (seam == null) {
+                throw new NullPointerException("Seam can't be null");
+        }
+
+        if (this.width() <= 1) {
+                throw new IllegalArgumentException("Picture not wide enough");
+        }
+
+        if (seam.length > this.height() || !isValidSeam(seam, 0, this.width()-1)) {
+                throw new IllegalArgumentException("Invallid Seam");
+        }
+
 
         // shift rows to overwrite removed index
         for (int row = 0; row < this.height(); row++) {
@@ -320,14 +366,29 @@ public void removeVerticalSeam(int[] seam) {
         }
 }
 
+private static boolean isValidSeam(int[] seam, int low, int high) {
+        // return false if two consecture entries differ by more than one
+        for (int i = 0; i < seam.length-2; i++) {
+                int val1 = seam[i];
+                int val2 = seam[i+1];
+                if (!inValidRange(val1, low, high)) {
+                        return false;
+                }
+                if (Math.abs(val1-val2) > 1) {
+                        return false;
+                }
+        }
+        return true;
+}
+
 public static void main(String[] args) {
         Picture picture = new Picture(args[0]);
         StdOut.printf("image is %d pixels wide by %d pixels high.\n", picture.width(), picture.height());
 
         SeamCarver sc = new SeamCarver(picture);
-        int[] seam = sc.findVerticalSeam();
+        int[] seam = sc.findHorizontalSeam();
         StdOut.println(Arrays.toString(seam));
-        sc.removeVerticalSeam(seam);
+        sc.removeHorizontalSeam(seam);
 
 }
 }
