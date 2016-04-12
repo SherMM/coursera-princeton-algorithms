@@ -5,7 +5,6 @@ import edu.princeton.cs.algs4.StdOut;
 public class SeamCarver {
 
 private static final double INFINITY = Double.POSITIVE_INFINITY;
-private Picture seamPic;
 private int[][] picColors; // for storing RGB ints
 private int w; // width of picture
 private int h; // height of picture
@@ -19,7 +18,7 @@ public SeamCarver(Picture picture) {
                 throw new NullPointerException("Picture can't be null");
         }
         // don't mutate original picture
-        seamPic = new Picture(picture);
+        Picture seamPic = new Picture(picture);
         w = seamPic.width();
         h = seamPic.height();
 
