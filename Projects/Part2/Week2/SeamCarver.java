@@ -9,8 +9,6 @@ private int[][] picColors; // for storing RGB ints
 private int w; // width of picture
 private int h; // height of picture
 private double[][] matrix; // enegry matrix
-private double[] distances; // for storing shortest path distances
-private int[] parents; // for storing parent pixels column indexes
 
 // create a seam carver object based on the given picture
 public SeamCarver(Picture picture) {
@@ -19,19 +17,19 @@ public SeamCarver(Picture picture) {
         }
         // don't mutate original picture
         Picture seamPic = new Picture(picture);
-        w = seamPic.width();
-        h = seamPic.height();
+        this.w = seamPic.width();
+        this.h = seamPic.height();
 
         // initialize picColors matrix
-        picColors = new int[h][w];
+        this.picColors = new int[h][w];
         for (int i = 0; i < this.height(); i++) {
                 for (int j = 0; j < this.width(); j++) {
-                        picColors[i][j] = seamPic.get(j, i).getRGB();
+                        this.picColors[i][j] = seamPic.get(j, i).getRGB();
                 }
         }
 
         // initialize energy matrix
-        matrix = new double[h][w];
+        this.matrix = new double[h][w];
         for (int i = 0; i < this.height(); i++) {
                 for (int j = 0; j < this.width(); j++) {
                         this.matrix[i][j] = 0.0;
@@ -44,11 +42,6 @@ public SeamCarver(Picture picture) {
                         this.matrix[row][col] = this.energy(col, row);
                 }
         }
-
-        // setup distance matrix
-        // will be initialized later
-        distances = new double[h*w];
-        parents = new int[h*w];
 }
 
 // current picture
@@ -193,24 +186,26 @@ private void transpose() {
 // sequence of indices for vertical seam
 public int[] findVerticalSeam() {
         // initialize distances matrix
+        double[] distances = new double[this.height()*this.width()];
         for (int i = 0; i < this.height(); i++) {
                 for (int j = 0; j < this.width(); j++) {
                         // all first row pixels are set to 100 energy
                         int index = convert2Dto1D(i, j, this.width());
                         if (i == 0) {
-                                this.distances[index] = 1000.0;
+                                distances[index] = 1000.0;
                         } else {
-                                this.distances[index] = INFINITY;
+                                distances[index] = INFINITY;
                         }
                 }
         }
 
         // initialize parents matrix
+        int[] parents = new int[this.height()*this.width()];
         for (int i = 0; i < this.height(); i++) {
                 for (int j = 0; j < this.width(); j++) {
                         int index = convert2Dto1D(i, j, this.width());
                         // set all to column index, initially
-                        this.parents[index] = j;
+                        parents[index] = j;
                 }
         }
 
@@ -224,12 +219,12 @@ public int[] findVerticalSeam() {
                                 // current pixel index
                                 int cindex = convert2Dto1D(i+1, k, this.width());
 
-                                double prevDist = this.distances[pindex];
-                                double currDist = this.distances[cindex];
+                                double prevDist = distances[pindex];
+                                double currDist = distances[cindex];
                                 double currEnergy = this.matrix[i+1][k];
                                 if (prevDist != INFINITY && (currDist > prevDist + currEnergy)) {
-                                        this.distances[cindex] = prevDist + currEnergy;
-                                        this.parents[cindex] = j;
+                                        distances[cindex] = prevDist + currEnergy;
+                                        parents[cindex] = j;
                                 }
                         }
                 }
@@ -239,14 +234,14 @@ public int[] findVerticalSeam() {
         int[] seam = new int[this.height()];
 
         // first find column of lowest energy path
-        int currCol = findMinPathColumn(this.height()-1, this.width(), this.distances);
+        int currCol = findMinPathColumn(this.height()-1, this.width(), distances);
         // reconstruct shortest energy path from bottom row to top row
         int currRow = this.height()-1;
 
         while (currRow >= 0) {
                 seam[currRow] = currCol;
                 int index = convert2Dto1D(currRow, currCol, this.width());
-                currCol = this.parents[index];
+                currCol = parents[index];
                 currRow -= 1;
         }
 

@@ -78,6 +78,7 @@ public int against(String team1, String team2) {
 
 // is given team eliminated?
 public boolean isEliminated(String team) {
+        int index = this.teamNames.get(team);
         return true;
 }
 
