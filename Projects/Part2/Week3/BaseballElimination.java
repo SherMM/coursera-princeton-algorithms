@@ -1,3 +1,4 @@
+import edu.princeton.cs.algs4.FlowEdge;
 import edu.princeton.cs.algs4.FlowNetwork;
 import edu.princeton.cs.algs4.FordFulkerson;
 import edu.princeton.cs.algs4.In;
@@ -78,8 +79,65 @@ public int against(String team1, String team2) {
 
 // is given team eliminated?
 public boolean isEliminated(String team) {
+        // get team index
         int index = this.teamNames.get(team);
+
+        // get number of divisional games remaining, excluding parameter team
+        int games = this.numOtherDivisionGames(index);
+
+        // num vertexes = s + t + games + numTeams
+        int numVerts = 2 + games + this.numTeams;
+
+        // build an empty flow network with numVerts vertexes
+        FlowNetwork flows = new FlowNetwork(numVerts);
+
+        // set up values for source (s) and sink (t) vertexes
+        int s = numVerts - 1;
+        int t = numVerts - 2;
+
+        // get best scenario for team parameter (wins all remaining games)
+        int possible = this.gameResults[index][0] + this.gameResults[index][2];
+
+        // add team vertex to sink (t) vertex edges
+        for (int i = 0; i < this.numTeams; i++) {
+                // exclude team parameter
+                if (i != index) {
+                        int capacity = possible - this.gameResults[i][0];
+                        FlowEdge edge = new FlowEdge(i, t, capacity);
+                }
+        }
+
+        // starting vertex value for game vertex
+        int gameIdx = this.numTeams;
+        // add source (s) vertex to game vertex edges
+        for (int i = 0; i < this.numTeams; i++) {
+                // exclude team parameter
+                if (i != index) {
+                        for (int j = 0; j < this.numTeams; j++) {
+                                if (i != j) {
+                                        // remaining games between teams i & j
+                                        int capacity = this.matchups[i][j];
+                                        FlowEdge edge = new FlowEdge(s, gameIdx, capacity);
+                                        gameIdx++;
+                                }
+                        }
+                }
+        }
         return true;
+}
+
+// write private buildFlowNetwork method to simplify isEliminated
+
+private int numOtherDivisionGames(int teamIdx) {
+        int total = 0;
+        for (int i = 0; i < this.matchups.length; i++) {
+                if (i != teamIdx) {
+                        for (int j = 0; j < this.matchups.length; j++) {
+                                total += this.matchups[i][j];
+                        }
+                }
+        }
+        return total;
 }
 
 /*
