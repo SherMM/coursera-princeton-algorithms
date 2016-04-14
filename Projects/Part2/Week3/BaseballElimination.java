@@ -4,9 +4,11 @@ import edu.princeton.cs.algs4.FordFulkerson;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 import java.util.HashMap;
+import java.util.Arrays;
 
 public class BaseballElimination {
 
+private static final int inf = Integer.MAX_VALUE;
 private int numTeams;
 private HashMap<String, Integer> teamNames;
 private int[][] gameResults;
@@ -82,8 +84,8 @@ public boolean isEliminated(String team) {
         // get team index
         int index = this.teamNames.get(team);
 
-        // get number of divisional games remaining, excluding parameter team
-        int games = this.numOtherDivisionGames(index);
+        // get number of game vertexes
+        int games = this.numGameVertexes(index);
 
         // num vertexes = s + t + games + numTeams
         int numVerts = 2 + games + this.numTeams;
@@ -92,8 +94,8 @@ public boolean isEliminated(String team) {
         FlowNetwork flows = new FlowNetwork(numVerts);
 
         // set up values for source (s) and sink (t) vertexes
-        int s = numVerts - 1;
-        int t = numVerts - 2;
+        int s = numVerts - 2;
+        int t = numVerts - 1;
 
         // get best scenario for team parameter (wins all remaining games)
         int possible = this.gameResults[index][0] + this.gameResults[index][2];
@@ -104,8 +106,12 @@ public boolean isEliminated(String team) {
                 if (i != index) {
                         int capacity = possible - this.gameResults[i][0];
                         FlowEdge edge = new FlowEdge(i, t, capacity);
+                        flows.addEdge(edge);
                 }
         }
+
+        // set up mapping of game vertex to teams involved
+        HashMap<Integer, Integer[]> gamesToTeams = new HashMap<Integer, Integer[]>();
 
         // starting vertex value for game vertex
         int gameIdx = this.numTeams;
@@ -113,14 +119,28 @@ public boolean isEliminated(String team) {
         for (int i = 0; i < this.numTeams; i++) {
                 // exclude team parameter
                 if (i != index) {
-                        for (int j = 0; j < this.numTeams; j++) {
-                                if (i != j) {
+                        for (int j = i+1; j < this.numTeams; j++) {
+                                if (i != j && j != index) {
                                         // remaining games between teams i & j
                                         int capacity = this.matchups[i][j];
+                                        // teams involved in a game
+                                        Integer[] gameTeams = {i, j};
+                                        gamesToTeams.put(gameIdx, gameTeams);
                                         FlowEdge edge = new FlowEdge(s, gameIdx, capacity);
+                                        flows.addEdge(edge);
                                         gameIdx++;
                                 }
                         }
+                }
+        }
+
+        // add game vertex to teams vertex edges
+        for (int i = this.numTeams; i < s; i++) {
+                // get teams involved in each game to map edges correctly
+                Integer[] gameTeams = gamesToTeams.get(i);
+                for (int j = 0; j < gameTeams.length; j++) {
+                        FlowEdge edge = new FlowEdge(i, gameTeams[j], inf);
+                        flows.addEdge(edge);
                 }
         }
         return true;
@@ -128,12 +148,14 @@ public boolean isEliminated(String team) {
 
 // write private buildFlowNetwork method to simplify isEliminated
 
-private int numOtherDivisionGames(int teamIdx) {
+private int numGameVertexes(int teamIdx) {
         int total = 0;
         for (int i = 0; i < this.matchups.length; i++) {
                 if (i != teamIdx) {
-                        for (int j = 0; j < this.matchups.length; j++) {
-                                total += this.matchups[i][j];
+                        for (int j = i+1; j < this.matchups.length; j++) {
+                                if (j != teamIdx && i != j) {
+                                        total += 1;
+                                }
                         }
                 }
         }
@@ -149,6 +171,7 @@ private int numOtherDivisionGames(int teamIdx) {
 
 public static void main(String[] args) {
         BaseballElimination division = new BaseballElimination(args[0]);
+        boolean test = division.isEliminated("Detroit");
         /*
            for (String team : division.teams()) {
                 if (division.isEliminated(team)) {
