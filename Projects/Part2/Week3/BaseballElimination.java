@@ -83,9 +83,22 @@ public int against(String team1, String team2) {
 public boolean isEliminated(String team) {
         // get team index
         int index = this.teamNames.get(team);
+
+        // trivial elimination
+        //(most wins by team still less than current wins of another team)
+        int maxWins = this.gameResults[index][0] + this.gameResults[index][2];
+        for (int i = 0; i < this.gameResults.length; i++) {
+                if (i != index && (maxWins < this.gameResults[i][0])) {
+                        return true;
+                }
+        }
+
+        // non-trivial elimination
         FlowNetwork flows = this.buildFlowNetwork(index);
         StdOut.println(flows);
-        FordFulkerson ford = new FordFulkerson(flows, )
+        int s = flows.V()-2;
+        int t = flows.V()-1;
+        FordFulkerson ford = new FordFulkerson(flows, s, t);
         return true;
 }
 
