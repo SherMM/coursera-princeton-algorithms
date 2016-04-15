@@ -3,6 +3,7 @@ import edu.princeton.cs.algs4.FlowNetwork;
 import edu.princeton.cs.algs4.FordFulkerson;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.Stack;
 import java.util.HashMap;
 import java.util.Arrays;
 
@@ -11,6 +12,7 @@ public class BaseballElimination {
 private static final int inf = Integer.MAX_VALUE;
 private int numTeams;
 private HashMap<String, Integer> teamNames;
+private String[] teams;
 private int[][] gameResults;
 private int[][] matchups;
 
@@ -19,12 +21,15 @@ public BaseballElimination(String filename) {
         In teamIn = new In(filename);
         this.numTeams = teamIn.readInt();
         this.teamNames = new HashMap<String, Integer>();
+        this.teams = new String[this.numTeams];
         this.gameResults = new int[this.numTeams][3];
         this.matchups = new int[this.numTeams][this.numTeams];
 
         int index = 0;
         while (!teamIn.isEmpty()) {
-                this.teamNames.put(teamIn.readString(), index);
+                String name = teamIn.readString();
+                this.teamNames.put(name, index);
+                this.teams[index] = name;
 
                 // read in games won, lost, remaining
                 for (int i = 0; i < 3; i++) {
@@ -86,11 +91,8 @@ public boolean isEliminated(String team) {
 
         // trivial elimination
         //(most wins by team still less than current wins of another team)
-        int maxWins = this.gameResults[index][0] + this.gameResults[index][2];
-        for (int i = 0; i < this.gameResults.length; i++) {
-                if (i != index && (maxWins < this.gameResults[i][0])) {
-                        return true;
-                }
+        if (this.eliminatedTriviallyBy(index).size() != 0) {
+                return true;
         }
 
         // non-trivial elimination
@@ -104,6 +106,19 @@ public boolean isEliminated(String team) {
                 }
         }
         return false;
+}
+
+private Stack<String> eliminatedTriviallyBy(int index) {
+        // trivial elimination
+        //(most wins by team still less than current wins of another team)
+        Stack<String> stack = new Stack<String>();
+        int maxWins = this.gameResults[index][0] + this.gameResults[index][2];
+        for (int i = 0; i < this.gameResults.length; i++) {
+                if (i != index && (maxWins < this.gameResults[i][0])) {
+                        stack.push(this.teams[i]);
+                }
+        }
+        return stack;
 }
 
 // write private buildFlowNetwork method to simplify isEliminated
@@ -166,19 +181,32 @@ private int numGameVertexes(int teamIdx) {
         return total;
 }
 
-/*
-   // subset R of teams that eliminates given team; null if not eliminated
-   public Iterable<String> certificateOfElimination(String team) {
+// subset R of teams that eliminates given team; null if not eliminated
+public Iterable<String> certificateOfElimination(String team) {
+        // get team index
+        int index = this.teamNames.get(team);
 
-   }
- */
+        Stack<String> stack = this.eliminatedTriviallyBy(index);
+        if (stack.size() == 0) {
+                // non-trivial elimination
+                FlowNetwork flows = this.buildFlowNetwork(index);
+                int s = flows.V()-2; // source vertex
+                int t = flows.V()-1; // sink vertex
+                FordFulkerson ford = new FordFulkerson(flows, s, t);
+
+                // find which team vertexes are on the source side of the min-cut
+                for (int i = 0; i < this.numTeams; i++) {
+                        if (ford.inCut(i)) {
+                                stack.push(this.teams[i]);
+                        }
+                }
+        }
+        return stack;
+}
 
 public static void main(String[] args) {
         BaseballElimination division = new BaseballElimination(args[0]);
-        boolean test = division.isEliminated("Detroit");
-        StdOut.println(test);
-        /*
-           for (String team : division.teams()) {
+        for (String team : division.teams()) {
                 if (division.isEliminated(team)) {
                         StdOut.print(team + " is eliminated by the subset R = { ");
                         for (String t : division.certificateOfElimination(team)) {
@@ -189,7 +217,6 @@ public static void main(String[] args) {
                 else {
                         StdOut.println(team + " is not eliminated");
                 }
-           }
-         */
+        }
 }
 }
