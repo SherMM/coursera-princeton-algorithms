@@ -5,11 +5,10 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.Stack;
 import java.util.HashMap;
-import java.util.Arrays;
 
 public class BaseballElimination {
 
-private static final int inf = Integer.MAX_VALUE;
+private static final int INF = Integer.MAX_VALUE;
 private int numTeams;
 private HashMap<String, Integer> teamNames;
 private String[] teams;
@@ -60,24 +59,36 @@ public Iterable<String> teams() {
 
 // number of wins for given team
 public int wins(String team) {
+        if (!this.teamNames.containsKey(team)) {
+                throw new IllegalArgumentException("Invalid Team");
+        }
         int index = this.teamNames.get(team);
         return this.gameResults[index][0];
 }
 
 // number of losses for given team
 public int losses(String team) {
+        if (!this.teamNames.containsKey(team)) {
+                throw new IllegalArgumentException("Invalid Team");
+        }
         int index = this.teamNames.get(team);
         return this.gameResults[index][1];
 }
 
 // number of remaining games for given team
 public int remaining(String team) {
+        if (!this.teamNames.containsKey(team)) {
+                throw new IllegalArgumentException("Invalid Team");
+        }
         int index = this.teamNames.get(team);
         return this.gameResults[index][2];
 }
 
 // number of remaining games between team1 and team2
 public int against(String team1, String team2) {
+        if (!this.teamNames.containsKey(team1) || !this.teamNames.containsKey(team2)) {
+                throw new IllegalArgumentException("Invalid Team");
+        }
         int idx1 = this.teamNames.get(team1);
         int idx2 = this.teamNames.get(team2);
 
@@ -86,6 +97,9 @@ public int against(String team1, String team2) {
 
 // is given team eliminated?
 public boolean isEliminated(String team) {
+        if (!this.teamNames.containsKey(team)) {
+                throw new IllegalArgumentException("Invalid Team");
+        }
         // get team index
         int index = this.teamNames.get(team);
 
@@ -155,8 +169,8 @@ private FlowNetwork buildFlowNetwork(int index) {
                                         flows.addEdge(s_edge);
 
                                         // add game vertex to team vertex edges
-                                        FlowEdge i_edge = new FlowEdge(gameIdx, i, inf);
-                                        FlowEdge j_edge = new FlowEdge(gameIdx, j, inf);
+                                        FlowEdge i_edge = new FlowEdge(gameIdx, i, INF);
+                                        FlowEdge j_edge = new FlowEdge(gameIdx, j, INF);
                                         flows.addEdge(i_edge);
                                         flows.addEdge(j_edge);
                                         gameIdx++;
@@ -183,6 +197,9 @@ private int numGameVertexes(int teamIdx) {
 
 // subset R of teams that eliminates given team; null if not eliminated
 public Iterable<String> certificateOfElimination(String team) {
+        if (!this.teamNames.containsKey(team)) {
+                throw new IllegalArgumentException("Invalid Team");
+        }
         // get team index
         int index = this.teamNames.get(team);
 
@@ -200,6 +217,11 @@ public Iterable<String> certificateOfElimination(String team) {
                                 stack.push(this.teams[i]);
                         }
                 }
+        }
+
+        // team wasn't eliminated
+        if (stack.size() == 0) {
+                return null;
         }
         return stack;
 }
