@@ -95,11 +95,15 @@ public boolean isEliminated(String team) {
 
         // non-trivial elimination
         FlowNetwork flows = this.buildFlowNetwork(index);
-        StdOut.println(flows);
-        int s = flows.V()-2;
-        int t = flows.V()-1;
+        int s = flows.V()-2; // source vertex
+        int t = flows.V()-1; // sink vertex
         FordFulkerson ford = new FordFulkerson(flows, s, t);
-        return true;
+        for (FlowEdge edge : flows.adj(s)) {
+                if (edge.flow() != edge.capacity()) {
+                        return true;
+                }
+        }
+        return false;
 }
 
 // write private buildFlowNetwork method to simplify isEliminated
@@ -172,6 +176,7 @@ private int numGameVertexes(int teamIdx) {
 public static void main(String[] args) {
         BaseballElimination division = new BaseballElimination(args[0]);
         boolean test = division.isEliminated("Detroit");
+        StdOut.println(test);
         /*
            for (String team : division.teams()) {
                 if (division.isEliminated(team)) {
