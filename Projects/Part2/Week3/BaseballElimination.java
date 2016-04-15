@@ -83,70 +83,57 @@ public int against(String team1, String team2) {
 public boolean isEliminated(String team) {
         // get team index
         int index = this.teamNames.get(team);
+        FlowNetwork flows = this.buildFlowNetwork(index);
+        StdOut.println(flows);
+        FordFulkerson ford = new FordFulkerson(flows, )
+        return true;
+}
 
+// write private buildFlowNetwork method to simplify isEliminated
+private FlowNetwork buildFlowNetwork(int index) {
         // get number of game vertexes
         int games = this.numGameVertexes(index);
 
         // num vertexes = s + t + games + numTeams
         int numVerts = 2 + games + this.numTeams;
-
-        // build an empty flow network with numVerts vertexes
-        FlowNetwork flows = new FlowNetwork(numVerts);
-
         // set up values for source (s) and sink (t) vertexes
         int s = numVerts - 2;
         int t = numVerts - 1;
 
+        // build an empty flow network with numVerts vertexes
+        FlowNetwork flows = new FlowNetwork(numVerts);
+
         // get best scenario for team parameter (wins all remaining games)
         int possible = this.gameResults[index][0] + this.gameResults[index][2];
 
-        // add team vertex to sink (t) vertex edges
+        // starting vertex value for game vertex
+        int gameIdx = this.numTeams;
+
         for (int i = 0; i < this.numTeams; i++) {
                 // exclude team parameter
                 if (i != index) {
+                        // add team vertex to sink (t) vertex edges
                         int capacity = possible - this.gameResults[i][0];
                         FlowEdge edge = new FlowEdge(i, t, capacity);
                         flows.addEdge(edge);
-                }
-        }
-
-        // set up mapping of game vertex to teams involved
-        HashMap<Integer, Integer[]> gamesToTeams = new HashMap<Integer, Integer[]>();
-
-        // starting vertex value for game vertex
-        int gameIdx = this.numTeams;
-        // add source (s) vertex to game vertex edges
-        for (int i = 0; i < this.numTeams; i++) {
-                // exclude team parameter
-                if (i != index) {
                         for (int j = i+1; j < this.numTeams; j++) {
                                 if (i != j && j != index) {
-                                        // remaining games between teams i & j
-                                        int capacity = this.matchups[i][j];
-                                        // teams involved in a game
-                                        Integer[] gameTeams = {i, j};
-                                        gamesToTeams.put(gameIdx, gameTeams);
-                                        FlowEdge edge = new FlowEdge(s, gameIdx, capacity);
-                                        flows.addEdge(edge);
+                                        // add source (s) vertex to game vertex edges
+                                        FlowEdge s_edge = new FlowEdge(s, gameIdx, this.matchups[i][j]);
+                                        flows.addEdge(s_edge);
+
+                                        // add game vertex to team vertex edges
+                                        FlowEdge i_edge = new FlowEdge(gameIdx, i, inf);
+                                        FlowEdge j_edge = new FlowEdge(gameIdx, j, inf);
+                                        flows.addEdge(i_edge);
+                                        flows.addEdge(j_edge);
                                         gameIdx++;
                                 }
                         }
                 }
         }
-
-        // add game vertex to teams vertex edges
-        for (int i = this.numTeams; i < s; i++) {
-                // get teams involved in each game to map edges correctly
-                Integer[] gameTeams = gamesToTeams.get(i);
-                for (int j = 0; j < gameTeams.length; j++) {
-                        FlowEdge edge = new FlowEdge(i, gameTeams[j], inf);
-                        flows.addEdge(edge);
-                }
-        }
-        return true;
+        return flows;
 }
-
-// write private buildFlowNetwork method to simplify isEliminated
 
 private int numGameVertexes(int teamIdx) {
         int total = 0;
